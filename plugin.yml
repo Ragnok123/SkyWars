@@ -1,0 +1,8 @@
+name: "SkyWars"
+main: cz.SkyWars.SkyWars
+version: "1.0"
+api: ["1.0.0"]
+author: "Ragnok123"
+commands:
+ sw:
+  description: "sw command"
