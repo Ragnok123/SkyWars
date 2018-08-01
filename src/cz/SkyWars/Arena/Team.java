@@ -1,8 +1,6 @@
 package cz.SkyWars.Arena;
 
 import cn.nukkit.Server;
-import cz.SkyWars.Arena.TeamPlayers;
-import cz.SkyWars.Arena.TeamArena;
 
 import cn.nukkit.level.Position;
 import cn.nukkit.Player;
@@ -12,16 +10,14 @@ import java.util.*;
 public class Team
 {
 
-	public TeamArena teamarena;
 	public Position teampos;
 	public int colorname;
 	public String teamname;
 
 	public HashMap<String, Player> teammates = new HashMap<String, Player>();
 
-	public Team(TeamArena teamarena, Position teampos, int colorname, String teamname)
+	public Team(Position teampos, int colorname, String teamname)
 	{
-		this.teamarena = teamarena;
 		this.teampos = teampos;
 		
 	}

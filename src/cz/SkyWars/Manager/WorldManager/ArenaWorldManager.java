@@ -1,7 +1,7 @@
 package cz.SkyWars.Manager.WorldManager;
 
 import cz.SkyWars.SkyWars;
-import cz.SkyWars.Arena.SoloArena;
+import cz.SkyWars.Arena.Arena;
 import cz.SkyWars.Manager.WorldManager.Functions.*;
 
 import org.apache.commons.io.FileUtils;
@@ -10,9 +10,9 @@ import java.io.*;
 
 public class ArenaWorldManager{
 
-   public SoloArena arena;
+   public Arena arena;
 
-    public ArenaWorldManager(SoloArena arena){
+    public ArenaWorldManager(Arena arena){
         this.arena = arena;
    }
 

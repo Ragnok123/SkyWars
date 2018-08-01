@@ -62,17 +62,17 @@ public class RandomAction {
 				player.sendMessage(LanguageManager.translate("open_inventory", player, new String[0]));
 			break;
 			case 3:
-				player.sendMessage("§aThis block wasnt lucky");
+				player.sendMessage("ï¿½aThis block wasnt lucky");
 			break;
 			case 4:
 				player.setHealth(player.getHealth() - 10);
-				player.sendMessage("§aYou have lost a lot of blood");
+				player.sendMessage("ï¿½aYou have lost a lot of blood");
 			break;
 			case 5:
-				player.sendMessage("§aThis block wasnt lucky");
+				player.sendMessage("ï¿½aThis block wasnt lucky");
 			break;
 			case 6:
-				player.sendMessage("§aThis block wasnt lucky");
+				player.sendMessage("ï¿½aThis block wasnt lucky");
 			break;
 			case 7:
 				player.getInventory().addItem(Item.get(20, 0, 64));
@@ -89,7 +89,7 @@ public class RandomAction {
 				player.sendMessage(LanguageManager.translate("open_inventory", player, new String[0]));
 			break;
 			case 10:
-				player.sendMessage("§aThis block wasnt lucky");
+				player.sendMessage("ï¿½aThis block wasnt lucky");
 			break;
 			case 11:
 				player.getInventory().addItem(Item.get(262,0,16));
@@ -120,7 +120,7 @@ public class RandomAction {
 			break;
 			case 17:
 				player.getInventory().setArmorItem(1, Item.get(444));
-				player.sendMessage("§eYee, elytra. U re lucky...");
+				player.sendMessage("ï¿½eYee, elytra. U re lucky...");
 			break;
 			case 18:
 				player.getInventory().addItem(Item.get(264, 0, 2));
@@ -130,10 +130,6 @@ public class RandomAction {
 			case 19:
 				player.getInventory().addItem(Item.get(46, 0, 3));
 				player.sendMessage(LanguageManager.translate("open_inventory", player, new String[0]));
-			break;
-			case 20:
-				new RewardAction(player, 5, 0);
-				player.sendMessage("§e+ §f5 §eTokens");
 			break;
 		}
 	}

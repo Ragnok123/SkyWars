@@ -1,6 +1,6 @@
 package cz.SkyWars.Arena.Timer;
 
-import cz.SkyWars.Arena.SoloArena;
+import cz.SkyWars.Arena.Arena;
 import cn.nukkit.blockentity.BlockEntitySign;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.scheduler.Task;
@@ -10,7 +10,7 @@ import java.lang.*;
 public class SoloArenaTimer extends Task
 {
 
-    public SoloArena arena;
+    public Arena arena;
     public String arenaname;
     public String worldname;
     public double signX;
@@ -18,7 +18,7 @@ public class SoloArenaTimer extends Task
     public double signZ;
     public int maxPlayerCount;
 
-    public SoloArenaTimer(SoloArena arena, String arenaname, String worldname, double signX, double signY, double signZ, int maxPlayerCount)
+    public SoloArenaTimer(Arena arena, String arenaname, String worldname, double signX, double signY, double signZ, int maxPlayerCount)
 	{
 		this.arena = arena;
 		this.arenaname = arenaname;

@@ -3,12 +3,10 @@ package cz.SkyWars.Arena;
 
 
 import cz.SkyWars.SkyWars;
-import cz.SkyWars.Arena.SoloPlayers;
 import cz.SkyWars.Arena.Timer.*;
 import cz.SkyWars.Manager.*;
 import cz.SkyWars.Manager.WorldManager.ArenaWorldManager;
 import cz.SkyWars.Manager.Kits.*;
-import cz.SkyWars.Actions.RewardAction;
 import cz.SkyWars.Actions.RandomAction;
 
 import cn.nukkit.block.*;
@@ -44,27 +42,19 @@ import cn.nukkit.entity.*;
 
 import java.util.*;
 
-public class SoloArena implements Listener
+public class Arena implements Listener
 {
 
-	public SoloPlayers swplayers;
+
 	public SkyWars skywars;
 	public ArenaWorldManager worldmanager;
+	public ArenaSettings settings;
 	public String arenaname;
 	public String worldname;
 
 	public double signX;
 	public double signY;
 	public double signZ;
-
-	public Position pos1;
-	public Position pos2;
-	public Position pos3;
-	public Position pos4;
-	public Position pos5;
-	public Position pos6;
-	public Position pos7;
-	public Position pos8;
 
 	public int maxPlayerCount;
 
@@ -97,24 +87,17 @@ public class SoloArena implements Listener
 	public HashMap<String, Double> arenadata;
 
 
-	public SoloArena(SkyWars skywars, String arenaname, String worldname, double signX, double signY, double signZ, HashMap<String, Double> arenadata, int maxPlayerCount)
+	public Arena(SkyWars skywars, String arenaname, ArenaSettings settings)
 	{
 		random = new Random();
         this.skywars = skywars;
         this.arenaname = arenaname;
-        this.worldname = worldname;
-        this.signX = signX;
-        this.signY = signY;
-        this.signZ = signZ;
-        this.arenadata = arenadata;
-        this.maxPlayerCount = maxPlayerCount;
 		this.waitTime = 60;
 		this.godTime = 0;
 		this.gameTime = 150;
 		this.endTime = 150;
 		this.lastTime = 0;
 		this.gameStatus = 0;
-        swplayers = new SoloPlayers(this, arenaname, worldname, maxPlayerCount);
         worldmanager = new ArenaWorldManager(this);
         worldmanager.restartArena(worldname);
         Server.getInstance().getScheduler().scheduleRepeatingTask(new SoloArenaTimer(this, arenaname, worldname, signX, signY, signZ, maxPlayerCount), 20);
@@ -425,7 +408,6 @@ public class SoloArena implements Listener
 				case 0:
 					this.gameStatus = 2;
 					this.lastTime = this.godTime;
-					swplayers.actualPos = 0;
 					Server.getInstance().getLogger().info("Game started on arena " + this.arenaname);
 					for (Player ingame : arenaplayers.values())
 					{
@@ -456,7 +438,6 @@ public class SoloArena implements Listener
 				Server.getInstance().loadLevel(worldname);
 				Server.getInstance().getLevelByName(worldname).setTime(6000);
 				Server.getInstance().getLevelByName(worldname).stopTime();
-				swplayers.actualPos = 0;
 				this.gameStatus = 0;
 				this.lastTime = 0;
 			}
@@ -471,14 +452,12 @@ public class SoloArena implements Listener
 						skywars.kitmanager.setKit(pla.getName(), "any_kit");
 						skywars.statsmanager.addWins(pla.getName(), 1); 
 						Server.getInstance().broadcastMessage("�eSkyWars> " + pla.getDisplayName() + " �awon the game on arena �b" + this.arenaname + "");
-						new RewardAction(pla, 100, 50);
+
 						Server.getInstance().unloadLevel(Server.getInstance().getLevelByName(worldname));
 						worldmanager.restartArena(worldname);
 						Server.getInstance().loadLevel(worldname);
 						Server.getInstance().getLevelByName(worldname).setTime(6000);
 						Server.getInstance().getLevelByName(worldname).stopTime();
-						swplayers.removePlayers();
-						swplayers.actualPos = 0;
 						this.gameStatus = 0;
 						this.lastTime = 0;
 				}
@@ -532,7 +511,6 @@ public class SoloArena implements Listener
 						Server.getInstance().loadLevel(worldname);
 						Server.getInstance().getLevelByName(worldname).setTime(6000);
 						Server.getInstance().getLevelByName(worldname).stopTime();
-						swplayers.removePlayers();
 						this.gameStatus = 0;
 						this.lastTime = 0;
 
@@ -558,7 +536,6 @@ public class SoloArena implements Listener
 		if (block.getX() == this.signX && block.getY() == this.signY && block.getZ() == this.signZ)
 		{
 			skywars.lobbyplayers.remove(player.getName());
-			swplayers.addPlayer(player, this.worldname, pos1, pos2, pos3, pos4, pos5, pos6, pos7, pos8);
 		}
     }
 
@@ -599,7 +576,6 @@ public class SoloArena implements Listener
 			{
 				if (player.getY() < 10)
 				{
-					swplayers.removePlayer(player, "kill");
 				}
             }
         }
@@ -611,7 +587,6 @@ public class SoloArena implements Listener
         Player player = event.getPlayer();
         if (arenaplayers.containsKey(player.getName()))
 		{
-			swplayers.removePlayer(player, "quit");
         }
     }
     
@@ -639,7 +614,6 @@ public class SoloArena implements Listener
         		for (Player ingames : arenaplayers.values())
         		{
 				ingames.sendMessage(LanguageManager.translate("sw_solo_all_death", ingames, playerEntity.getName()));
-				swplayers.removePlayer(playerEntity, "kill");
 				skywars.statsmanager.addDeaths(playerEntity.getName(), 1);
         		}
         	}
@@ -656,7 +630,7 @@ public class SoloArena implements Listener
             		for (Player ingame : arenaplayers.values())
             		{
 					ingame.sendMessage(LanguageManager.translate("sw_solo_all_death_cause_kill", ingame, hitnutyHrac.getName(), player.getName()));
-					swplayers.removePlayer(hitnutyHrac, "kill");
+
 					skywars.statsmanager.addKills(player.getName(), 1);
 					skywars.statsmanager.addDeaths(hitnutyHrac.getName(), 1);
             		}
@@ -695,7 +669,6 @@ public class SoloArena implements Listener
         if (arenaplayers.containsKey(player.getName()))
 		{
 			event.setDeathMessage("");
-			swplayers.removePlayer(player, "kill");
         }
     }
     
@@ -711,7 +684,6 @@ public class SoloArena implements Listener
 		{
 			if(item.getCustomName().equals("�eBack to lobby"))
 			{
-				swplayers.removePlayer(player, "hub");
 				
 			}
 		}
