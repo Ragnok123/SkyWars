@@ -8,6 +8,7 @@ import cz.SkyWars.Arena.Timer.*;
 import cz.SkyWars.Manager.*;
 import cz.SkyWars.Manager.WorldManager.ArenaWorldManager;
 import cz.SkyWars.Actions.RandomAction;
+import cz.SkyWars.Actions.MoneyRewardAction;
 
 import cn.nukkit.block.*;
 import cn.nukkit.blockentity.*;
@@ -314,7 +315,7 @@ public class Arena implements Listener
 						pla.teleport(skywars.lobbyXYZ);
 						pla.getFoodData().setLevel(20);
 						Server.getInstance().broadcastMessage("§eSkyWars> " + pla.getDisplayName() + " §awon the game on arena §b" + this.arenaname + "");
-
+						new MoneyRewardAction(pla);
 						Server.getInstance().unloadLevel(Server.getInstance().getLevelByName(worldname));
 						worldmanager.restartArena(worldname);
 						Server.getInstance().loadLevel(worldname);

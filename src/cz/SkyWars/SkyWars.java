@@ -88,6 +88,9 @@ public class SkyWars extends PluginBase implements Listener
 			settingsc.set("lobbyWorld", getServer().getDefaultLevel().getName());
 			settingsc.set("dataProvider.yaml", true);
 			settingsc.set("dataProvider.mysql", false);
+			settingsc.set("economyapi-enabled", true);
+			settingsc.set("customeconomy-enabled", false);
+			settingsc.set("reward-amount", 100);
 			settingsc.set("mysql.url", "");
 			settingsc.set("mysql.login", "");
 			settingsc.set("mysql.password", "");
@@ -167,6 +170,10 @@ public class SkyWars extends PluginBase implements Listener
 		{
 			event.setCancelled();
 		}
+	}
+	
+	public int getReward() {
+		return (int) settingsc.get("reward-amount");
 	}
 	
 	@EventHandler
