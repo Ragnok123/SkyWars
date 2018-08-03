@@ -14,24 +14,31 @@ public class MySQL
 
 	public SkyWars plugin;
 	public Connection conn;
+	
+	String login = "";
+    String database = "";
+    String password = "";
+    String url = "";
 
-	public MySQL(SkyWars plugin)
+	public MySQL(SkyWars plugin, String login, String pass, String database, String url)
 	{
 		this.plugin = plugin;
+		this.login= login;
+		this.password = pass;
+		this.database = database;
+		this.url = url;
 	}
 
 
 	public Connection connect()
 	{
-        String login = "";
-        String database = "";
-        String password = "";
+        
         try
 		{
             Class.forName("com.mysql.jdbc.Driver");
 			conn = DriverManager.getConnection("" + database + "?" + "user=" + login + "&" + "password=" + password);
 			conn.createStatement();
-			plugin.getServer().getLogger().info("§eSW> §aPřipojeno k MySQL databázi");
+			plugin.getServer().getLogger().info("Connected to MySQL database");
         }
 		catch (SQLException var7)
 		{
@@ -57,6 +64,10 @@ public class MySQL
             exception.printStackTrace();
         }
     }
+	
+	public void init() {
+		updateData("CREATE TABLE IF NOT EXISTS `skywars_stats` (`nickname` varchar(50) NOT NULL default '', `kills` int(11) NOT NULL default '0', `deaths` int(11) NOT NULL default '0', `wins` int(11) NOT NULL default '0')");
+	}
 
 
     public HashMap<String, Object> getPlayerStatsData(String username)

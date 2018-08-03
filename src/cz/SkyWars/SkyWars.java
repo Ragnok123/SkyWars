@@ -3,11 +3,11 @@ package cz.SkyWars;
 import cz.SkyWars.Arena.Arena;
 import cz.SkyWars.Arena.ArenaSettings;
 import cz.SkyWars.Manager.*;
-import cz.SkyWars.Manager.Kits.*;
 import cz.SkyWars.Manager.WorldManager.*;
 import cz.SkyWars.MySQL;
 import cz.SkyWars.Actions.*;
 import cz.SkyWars.JoinTask;
+import cz.SkyWars.Database.*;
 
 import cn.nukkit.Player;
 import cn.nukkit.Server;
@@ -53,59 +53,31 @@ public class SkyWars extends PluginBase implements Listener
 
 	public static SkyWars instance;
 	public MySQL mysql;
-	public KitManager kitmanager;
-	public StatsManager statsmanager;
-
 	public Position lobbyXYZ;
+	public Database database;
 
 	public HashMap<String, Arena> arenas = new HashMap<String, Arena>();
-	public HashMap<String, Player> lobbyplayers = new HashMap<String, Player>();
 	public Config settingsc;
 	public Config arenass;
+	public Config cplayers;
 	
 	public HashMap<Player, ArenaSettings> setup = new HashMap<Player, ArenaSettings>();
 	public HashMap<Player, Integer> step = new HashMap<Player, Integer>();
-	public HashMap<String, HashMap<String, Double>> mapsdata = new HashMap<String, HashMap<String, Double>>();
 	public static HashMap<String, SWPlayer> players = new HashMap<String, SWPlayer>();
 
 	@Override
 	public void onLoad()
 	{
 		LanguageManager.initEnglishMsg();
-		initializeArrays();	
 		
 	}
 	
-	/*
-	 * arenaname:
-	 * 		settings:
-	 * 			slots: int
-	 * 			time: int
-	 * 			//kits: boolean
-	 * 		sign:
-	 * 			x: double
-	 * 			y: double
-	 * 			z: double
-	 * 			world: String
-	 * 		pos+int:
-	 * 			x: double
-	 * 			y: double
-	 * 			z: double
-	 * 			world: String
-	 * 
-	 * Config = String, new HashMap<String, new HashMap<String, Object>>
-	 */
-	
-	
+
 	@Override
     public void onEnable()
 	{ 
 		instance = this;
 		getServer().getPluginManager().registerEvents(this, this);
-		mysql = new MySQL(this);
-		mysql.connect();
-		kitmanager = new KitManager(this);
-		statsmanager = new StatsManager(this);
 		
 		File settingsFile = new File(getDataFolder() + "/settings.yml");
 		if(!settingsFile.exists()) {
@@ -114,15 +86,52 @@ public class SkyWars extends PluginBase implements Listener
 			settingsc.set("lobbyY", getServer().getDefaultLevel().getSafeSpawn().getY() + 4.00);
 			settingsc.set("lobbyZ", getServer().getDefaultLevel().getSafeSpawn().getZ());
 			settingsc.set("lobbyWorld", getServer().getDefaultLevel().getName());
+			settingsc.set("dataProvider.yaml", true);
+			settingsc.set("dataProvider.mysql", false);
+			settingsc.set("mysql.url", "");
+			settingsc.set("mysql.login", "");
+			settingsc.set("mysql.password", "");
+			settingsc.set("mysql.database", "");
 			settingsc.save();
 		} else {
 			settingsc = new Config(getDataFolder() + "/settings.yml", Config.YAML);
 		}
+		
+		if((boolean)settingsc.get("dataProvider.yaml") == true && (boolean)settingsc.get("dataProvider.mysql") == false) {
+			database = new YamlDatabase(this);
+			getLogger().info("Choosed Yaml data provider");
+		}
+		
+		if((boolean)settingsc.get("dataProvider.yaml") == false && (boolean)settingsc.get("dataProvider.mysql") == true) {
+			database = new MysqlDatabase(this);
+			getLogger().info("Choosed MySQL data provider");
+			String host = (String) settingsc.get("mysql.url");
+			String login = (String) settingsc.get("mysql.login");
+			String pass = (String) settingsc.get("mysql.password");
+			String db = (String) settingsc.get("mysql.database");
+			mysql = new MySQL(this, login, pass, db, host);
+			mysql.connect();
+			mysql.init();
+		}
+		
+		if((boolean)settingsc.get("dataProvider.yaml") == false && (boolean)settingsc.get("dataProvider.mysql") == false) {
+			getLogger().info("Select data provider firstly");
+			getServer().getPluginManager().disablePlugin(this);
+		}
+		
+		if((boolean)settingsc.get("dataProvider.yaml") == true && (boolean)settingsc.get("dataProvider.mysql") == true) {
+			getLogger().info("Choose only one data provider");
+			getServer().getPluginManager().disablePlugin(this);
+		}
+		
 		arenass = new Config(getDataFolder() + "/arenas.yml", Config.YAML);
+		cplayers = new Config(getDataFolder() + "/arenas.yml", Config.YAML);
 		/* Positions */
 		String world =  (String) settingsc.get("lobbyWorld") ;
 		lobbyXYZ = new Position((double)settingsc.get("lobbyX"), (double)settingsc.get("lobbyY"), (double)settingsc.get("lobbyZ"));
 		lobbyXYZ.setLevel(getServer().getLevelByName(world));
+
+		initializeArrays();
 	}	
 	
     
@@ -181,8 +190,8 @@ public class SkyWars extends PluginBase implements Listener
 		Player player = event.getPlayer();
 		SWPlayer data = new SWPlayer(player);
 		players.put(player.getName().toLowerCase(), data);
-		FloatingTextParticle floatparticle = new FloatingTextParticle(new Vector3(97.00, 30.00, 156.00), "�aNickname: �f " + player.getName() + "\n�aKills: �f" + statsmanager.getKills(player.getName()) + "\n�aDeaths: �f" + statsmanager.getDeaths(player.getName()) + "\n�aWins: �f" + statsmanager.getWins(player.getName()) + "\n", "�l�b[�eLuckyWars �bstats]");
-		getServer().getDefaultLevel().addParticle(floatparticle, player);
+		//FloatingTextParticle floatparticle = new FloatingTextParticle(new Vector3(97.00, 30.00, 156.00), "�aNickname: �f " + player.getName() + "\n�aKills: �f" + statsmanager.getKills(player.getName()) + "\n�aDeaths: �f" + statsmanager.getDeaths(player.getName()) + "\n�aWins: �f" + statsmanager.getWins(player.getName()) + "\n", "�l�b[�eLuckyWars �bstats]");
+		//getServer().getDefaultLevel().addParticle(floatparticle, player);
 	}
 
     public static SkyWars getInstance()
@@ -194,7 +203,7 @@ public class SkyWars extends PluginBase implements Listener
     public void handleHunger(PlayerFoodLevelChangeEvent event)
     {
     	Player player = event.getPlayer();
-    	if(player.getLevel() == getServer().getDefaultLevel() && lobbyplayers.containsKey(player.getName()))
+    	if(player.getLevel() == getServer().getDefaultLevel() && SkyWars.getPlayer(player).isInLobby())
     	{
     		event.setCancelled();
     	}
@@ -224,14 +233,7 @@ public class SkyWars extends PluginBase implements Listener
         			resetStep(player);
         		}
         	}
-        	HashMap<String, HashMap<String, Object>> d1 = new HashMap<String, HashMap<String, Object>>();
-        	HashMap<String, Object> d2 = new HashMap<String, Object>();
-        	d2.put("x", block.x);
-    		d2.put("y", block.y);
-    		d2.put("z", block.z);
-    		d2.put("world", block.getLevel().getName());
-    		d1.put("pos" + String.valueOf(currentStep), d2);
-    		settings.setPositions(d1);
+    		settings.setPositions(currentStep, block.x, block.y, block.z, block.getLevel().getName());
     		player.sendMessage(LanguageManager.translate("arena_click", player, new String[0]));
     		resetStep(player);
     	}

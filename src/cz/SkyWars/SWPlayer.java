@@ -6,6 +6,7 @@ public class SWPlayer {
 	
 	private Player player;
 	private boolean isLobby = true;
+	private int currentPosition;
 	
 	public SWPlayer(Player player) {
 		this.player = player;
@@ -15,8 +16,16 @@ public class SWPlayer {
 		return isLobby;
 	}
 	
-	public void setLobby(boolean value) {
+	public void setInLobby(boolean value) {
 		isLobby = value;
 	}
+	
+	public int getSpawnPosition() {
+		return currentPosition;
+	}
 
+	public void setSpawnPosition(int i) {
+		currentPosition = i;
+	}
+	
 }

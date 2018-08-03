@@ -19,7 +19,6 @@ public class JoinTask extends Task{
 	public void onRun(int currentTick)
 	{
 		player.teleport(skywars.lobbyXYZ);
-		skywars.lobbyplayers.put(player.getName(), player);
 	}
 
 }

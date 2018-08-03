@@ -3,10 +3,10 @@ package cz.SkyWars.Arena;
 
 
 import cz.SkyWars.SkyWars;
+import cz.SkyWars.SWPlayer;
 import cz.SkyWars.Arena.Timer.*;
 import cz.SkyWars.Manager.*;
 import cz.SkyWars.Manager.WorldManager.ArenaWorldManager;
-import cz.SkyWars.Manager.Kits.*;
 import cz.SkyWars.Actions.RandomAction;
 
 import cn.nukkit.block.*;
@@ -49,6 +49,9 @@ public class Arena implements Listener
 	public SkyWars skywars;
 	public ArenaWorldManager worldmanager;
 	public ArenaSettings settings;
+	public Position[] positions;
+	public int spawnIndex;
+	
 	public String arenaname;
 	public String worldname;
 
@@ -78,12 +81,6 @@ public class Arena implements Listener
 
 	public HashMap<String, Player> arenaplayers = new HashMap<String, Player>();
 
-	public HashMap<String, Player> buyingKit = new HashMap<String, Player>();
-
-	public HashMap<String, Player> nopage = new HashMap<String, Player>();
-	public HashMap<String, Player> firstpage = new HashMap<String, Player>();
-	public HashMap<String, Player> secondpage = new HashMap<String, Player>();
-	
 	public HashMap<String, Double> arenadata;
 
 
@@ -94,179 +91,46 @@ public class Arena implements Listener
         this.arenaname = arenaname;
 		this.waitTime = 60;
 		this.godTime = 0;
-		this.gameTime = 150;
-		this.endTime = 150;
+		this.gameTime = (settings.getTime()*60) - 60;
+		this.endTime = 60;
 		this.lastTime = 0;
 		this.gameStatus = 0;
+		signX = settings.getSign().x;
+		signY = settings.getSign().y;
+		signZ = settings.getSign().z;
+		maxPlayerCount = settings.getSlots();
+		initPositions();
+		
+		worldname = settings.getLevel().getName();
         worldmanager = new ArenaWorldManager(this);
         worldmanager.restartArena(worldname);
         Server.getInstance().getScheduler().scheduleRepeatingTask(new SoloArenaTimer(this, arenaname, worldname, signX, signY, signZ, maxPlayerCount), 20);
 	}
-
-
-	/*
-	public void initializeArrays()
-	{
-		armor1.put(298, new Weight(20, 1, 1));
-		armor1.put(302, new Weight(15, 1, 1));
-		armor1.put(306, new Weight(8, 1, 1));
-		armor1.put(310, new Weight(2, 1, 1));
-		armor1.put(314, new Weight(10, 1, 1));
-
-		armor2.put(299, new Weight(20, 1, 1));
-		armor2.put(303, new Weight(15, 1, 1));
-		armor2.put(307, new Weight(8, 1, 1));
-		armor2.put(311, new Weight(2, 1, 1));
-		armor2.put(315, new Weight(10, 1, 1));
-
-		armor3.put(300, new Weight(20, 1, 1));
-		armor3.put(304, new Weight(15, 1, 1));
-		armor3.put(308, new Weight(8, 1, 1));
-		armor3.put(312, new Weight(2, 1, 1));
-		armor3.put(316, new Weight(10, 1, 1));
-
-		armor4.put(301, new Weight(20, 1, 1));
-		armor4.put(305, new Weight(15, 1, 1));
-		armor4.put(309, new Weight(8, 1, 1));
-		armor4.put(313, new Weight(2, 1, 1));
-		armor4.put(317, new Weight(10, 1, 1));
-
-		sword1.put(267, new Weight(10, 1, 2));
-		sword1.put(268, new Weight(20, 1, 2));
-		sword1.put(272, new Weight(17, 1, 2));
-		sword1.put(276, new Weight(5, 1, 2));
-
-		itemarray.put(258, new Weight(30, 1, 1));
-		itemarray.put(261, new Weight(28, 1, 1));
-		itemarray.put(262, new Weight(54, 1, 18));
-		itemarray.put(260, new Weight(43, 1, 10));
-		itemarray.put(264, new Weight(13, 1, 1));
-		itemarray.put(275, new Weight(25, 1, 1));
-		itemarray.put(332, new Weight(39, 1, 16));
-
-		blockarray.put(3, new Weight(50, 32, 64));
-		blockarray.put(4, new Weight(50, 32, 64));
-		blockarray.put(5, new Weight(50, 32, 64));
-	}
-
-	public Item getHelmetItem()
-	{
-		int count = 0;
-		int num = random.nextInt(finalWeight);
-		for (Map.Entry<Integer, Weight> entry : armor1.entrySet())
-		{
-			count += entry.getValue().weight;
-			if (count >= num)
-			{
-				return Item.get(entry.getKey(), 0, new Random().nextInt((entry.getValue().max - entry.getValue().min) + 1) + entry.getValue().min);
-			}
+	
+	private void initPositions() {
+		for(int i = 1; i <= settings.getSlots(); i++) {
+			Position pos = settings.getPosition(i);
+			positions = new Position[] {
+					pos
+			};
 		}
-		return Item.get(0);
 	}
+	
+	
 
-	public Item getChestplaceItem()
-	{
-		int count = 0;
-		int num = random.nextInt(finalWeight);
-		for (Map.Entry<Integer, Weight> entry : armor2.entrySet())
-		{
-			count += entry.getValue().weight;
-			if (count >= num)
-			{
-				return Item.get(entry.getKey(), 0, new Random().nextInt((entry.getValue().max - entry.getValue().min) + 1) + entry.getValue().min);
-			}
-		}
-		return Item.get(0);
-	}
-
-	public Item getLegginsItem()
-	{
-		int count = 0;
-		int num = random.nextInt(finalWeight);
-		for (Map.Entry<Integer, Weight> entry : armor3.entrySet())
-		{
-			count += entry.getValue().weight;
-			if (count >= num)
-			{
-				return Item.get(entry.getKey(), 0, new Random().nextInt((entry.getValue().max - entry.getValue().min) + 1) + entry.getValue().min);
-			}
-		}
-		return Item.get(0);
-	}
-
-	public Item getBootsItem()
-	{
-		int count = 0;
-		int num = random.nextInt(finalWeight);
-		for (Map.Entry<Integer, Weight> entry : armor4.entrySet())
-		{
-			count += entry.getValue().weight;
-			if (count >= num)
-			{
-				return Item.get(entry.getKey(), 0, new Random().nextInt((entry.getValue().max - entry.getValue().min) + 1) + entry.getValue().min);
-			}
-		}
-		return Item.get(0);
-	}
-
-	public Item getSwordItem()
-	{
-		int count = 0;
-		int num = random.nextInt(finalWeight);
-		for (Map.Entry<Integer, Weight> entry : sword1.entrySet())
-		{
-			count += entry.getValue().weight;
-			if (count >= num)
-			{
-				return Item.get(entry.getKey(), 0, new Random().nextInt((entry.getValue().max - entry.getValue().min) + 1) + entry.getValue().min);
-			}
-		}
-		return Item.get(0);
-	}
-
-	public Item getRandomItem()
-	{
-		int count = 0;
-		int num = random.nextInt(finalWeight);
-		for (Map.Entry<Integer, Weight> entry : itemarray.entrySet())
-		{
-			count += entry.getValue().weight;
-			if (count >= num)
-			{
-				return Item.get(entry.getKey(), 0, new Random().nextInt((entry.getValue().max - entry.getValue().min) + 1) + entry.getValue().min);
-			}
-		}
-		return Item.get(0);
-	}
-
-	public Item getRandomBlock()
-	{
-		int count = 0;
-		int num = random.nextInt(finalWeight);
-		for (Map.Entry<Integer, Weight> entry : blockarray.entrySet())
-		{
-			count += entry.getValue().weight;
-			if (count >= num)
-			{
-				return Item.get(entry.getKey(), 0, new Random().nextInt((entry.getValue().max - entry.getValue().min) + 1) + entry.getValue().min);
-			}
-		}
-		return Item.get(0);
-	}
-	*/
 	
 	public void signChange(String arenaname, double signX, double signY, double signZ, int maxPlayerCount)
 	{
 		if(this.gameStatus < 2)
 		{
 			BlockEntitySign sign = (BlockEntitySign)skywars.getServer().getDefaultLevel().getBlockEntity(new Vector3(signX, signY, signZ));
-			sign.setText("�e[LuckyWars]", "�a" + this.arenaname + "", "�e" + String.valueOf(arenaplayers.size()) + "/" + String.valueOf(maxPlayerCount) + "", "�aJOIN");
+			sign.setText("§e[SkyWars]", "§a" + this.arenaname + "", "§e" + String.valueOf(arenaplayers.size()) + "/" + String.valueOf(maxPlayerCount) + "", "§aJOIN");
 			
 		}
 		if(this.gameStatus > 2)
 		{
 			BlockEntitySign sign = (BlockEntitySign)skywars.getServer().getDefaultLevel().getBlockEntity(new Vector3(signX, signY, signZ));
-			sign.setText("�e[LuckyWars]", "�a" + this.arenaname + "", "�e" + String.valueOf(arenaplayers.size()) + "/" + String.valueOf(maxPlayerCount) + "", "�cRUNNING");
+			sign.setText("§e[SkyWars]", "§a" + this.arenaname + "", "§e" + String.valueOf(arenaplayers.size()) + "/" + String.valueOf(maxPlayerCount) + "", "§cRUNNING");
 			
 		}
 		
@@ -297,36 +161,36 @@ public class Arena implements Listener
 				case 1:
 					for (Player ingame : arenaplayers.values())
 					{
-						ingame.sendPopup("�aGame starts in �b" + this.lastTime + " �aseconds");
-						ingame.sendTitle("�b1");
+						ingame.sendPopup("§aGame starts in §b" + this.lastTime + " §aseconds");
+						ingame.sendTitle("§a1");
 					}
 					break;
 				case 2:
 					for (Player ingame : arenaplayers.values())
 					{
-						ingame.sendPopup("�aGame starts in �b" + this.lastTime + " �aseconds");
-						ingame.sendTitle("�b2");
+						ingame.sendPopup("§aGame starts in §b" + this.lastTime + " §aseconds");
+						ingame.sendTitle("§e2");
 					}
 					break;
 				case 3:
 					for (Player ingame : arenaplayers.values())
 					{
-						ingame.sendPopup("�aGame starts in �b" + this.lastTime + " �aseconds");
-						ingame.sendTitle("�b3");
+						ingame.sendPopup("§aGame starts in §b" + this.lastTime + " §aseconds");
+						ingame.sendTitle("§63");
 					}
 					break;
 				case 4:
 					for (Player ingame : arenaplayers.values())
 					{
-						ingame.sendPopup("�aGame starts in �b" + this.lastTime + " �aseconds");
-						ingame.sendTitle("�b4");
+						ingame.sendPopup("§aGame starts in §b" + this.lastTime + " §aseconds");
+						ingame.sendTitle("§c4");
 					}
 					break;
 				case 5:
 					for (Player ingame : arenaplayers.values())
 					{
-						ingame.sendPopup("�aGame starts in �b" + this.lastTime + " �aseconds"); 
-						ingame.sendTitle("�b5");
+						ingame.sendPopup("§aGame starts in §b" + this.lastTime + " §aseconds"); 
+						ingame.sendTitle("§45");
 					}
 					break;
 				case 6:
@@ -335,14 +199,14 @@ public class Arena implements Listener
 				case 9:
 					for (Player ingame : arenaplayers.values())
 					{
-						ingame.sendPopup("�aGame starts in �b" + this.lastTime + " �aseconds");
+						ingame.sendPopup("§aGame starts in §b" + this.lastTime + " §aseconds");
 					}
 					break;
 				case 10:
 					for (Player ingame : arenaplayers.values())
 					{
-						ingame.sendPopup("�aGame starts in �b" + this.lastTime + " �aseconds");
-						ingame.sendTitle("�b10");
+						ingame.sendPopup("§aGame starts in §b" + this.lastTime + " §aseconds");
+						ingame.sendTitle("§b10");
 					}
 					break;
 				case 11:
@@ -396,13 +260,13 @@ public class Arena implements Listener
 				case 59:
 					for (Player ingame : arenaplayers.values())
 					{
-						ingame.sendPopup("�aGame starts in �b" + this.lastTime + " �aseconds");
+						ingame.sendPopup("§aGame starts in §b" + this.lastTime + " §aseconds");
 					}
 					break;
 				case 60:
 					for (Player ingame : arenaplayers.values())
 					{
-						ingame.sendPopup("�aGame starts in �b" + this.lastTime + " �aseconds");
+						ingame.sendPopup("§aGame starts in §b" + this.lastTime + " §aseconds");
 					}
 					break;
 				case 0:
@@ -413,7 +277,7 @@ public class Arena implements Listener
 					{
 						ingame.sendMessage(LanguageManager.translate("sw_solo_game_started", ingame, new String[0]));
 						ingame.sendMessage(LanguageManager.translate("sw_solo_list_players", ingame, String.valueOf(arenaplayers.size())));
-						ingame.sendTitle("�bGame started");
+						ingame.sendTitle("§bGame started");
 						ingame.getInventory().clearAll();
 					}
 					break;
@@ -428,7 +292,7 @@ public class Arena implements Listener
 		{
 			for(Player ingame : arenaplayers.values())
 			{
-				ingame.sendPopup("�aPlayers: " + arenaplayers.size());
+				ingame.sendPopup("§aPlayers: " + arenaplayers.size());
 			}
 		
 			if (arenaplayers.size() == 0)
@@ -446,12 +310,10 @@ public class Arena implements Listener
 				for (Player pla : arenaplayers.values())
 				{
 						pla.getInventory().clearAll();
-						skywars.lobbyplayers.put(pla.getName(), pla);
+						SkyWars.getPlayer(pla).setInLobby(true);
 						pla.teleport(skywars.lobbyXYZ);
 						pla.getFoodData().setLevel(20);
-						skywars.kitmanager.setKit(pla.getName(), "any_kit");
-						skywars.statsmanager.addWins(pla.getName(), 1); 
-						Server.getInstance().broadcastMessage("�eSkyWars> " + pla.getDisplayName() + " �awon the game on arena �b" + this.arenaname + "");
+						Server.getInstance().broadcastMessage("§eSkyWars> " + pla.getDisplayName() + " §awon the game on arena §b" + this.arenaname + "");
 
 						Server.getInstance().unloadLevel(Server.getInstance().getLevelByName(worldname));
 						worldmanager.restartArena(worldname);
@@ -488,9 +350,6 @@ public class Arena implements Listener
 				case 15:
 				case 30:
 				case 60:
-				case 100:
-				case 120:
-				case 150:
 					for (Player ingame : arenaplayers.values())
 					{
 						ingame.sendMessage(LanguageManager.translate("sw_solo_time", ingame, String.valueOf(this.lastTime)));
@@ -500,12 +359,10 @@ public class Arena implements Listener
 					for (Player pla : arenaplayers.values())
 					{
 						pla.getInventory().clearAll();
-						skywars.lobbyplayers.put(pla.getName(), pla);
+						SkyWars.getPlayer(pla).setInLobby(true);
 						pla.teleport(skywars.lobbyXYZ);
 						pla.getFoodData().setLevel(20);
-						skywars.kitmanager.setKit(pla.getName(), "any_kit");
-						skywars.statsmanager.addWins(pla.getName(), 1); 
-						Server.getInstance().broadcastMessage("�eSkyWars> �aNoone didnt won the game on arena �b" + this.arenaname + "");
+						Server.getInstance().broadcastMessage("§eSkyWars> §aNoone didnt won the game on arena §b" + this.arenaname + "");
 						Server.getInstance().unloadLevel(Server.getInstance().getLevelByName(worldname));
 						worldmanager.restartArena(worldname);
 						Server.getInstance().loadLevel(worldname);
@@ -519,25 +376,38 @@ public class Arena implements Listener
 			}
 		}
 	}
+    
+    public boolean game(Player player) {
+    	return arenaplayers.containsKey(player.getName());
+    }
 
     @EventHandler
     public void handleInteractForJoiningToArena(PlayerInteractEvent event)
 	{
-    	Position pos1 = new Position(this.arenadata.get("pos1X"), this.arenadata.get("pos1Y"), this.arenadata.get("pos1Z"), Server.getInstance().getLevelByName(this.worldname));
-    	Position pos2 = new Position(this.arenadata.get("pos2X"), this.arenadata.get("pos2Y"), this.arenadata.get("pos2Z"), Server.getInstance().getLevelByName(this.worldname));
-    	Position pos3 = new Position(this.arenadata.get("pos3X"), this.arenadata.get("pos3Y"), this.arenadata.get("pos3Z"), Server.getInstance().getLevelByName(this.worldname));
-    	Position pos4 = new Position(this.arenadata.get("pos4X"), this.arenadata.get("pos4Y"), this.arenadata.get("pos4Z"), Server.getInstance().getLevelByName(this.worldname));
-    	Position pos5 = new Position(this.arenadata.get("pos5X"), this.arenadata.get("pos5Y"), this.arenadata.get("pos5Z"), Server.getInstance().getLevelByName(this.worldname));
-    	Position pos6 = new Position(this.arenadata.get("pos6X"), this.arenadata.get("pos6Y"), this.arenadata.get("pos6Z"), Server.getInstance().getLevelByName(this.worldname));
-    	Position pos7 = new Position(this.arenadata.get("pos7X"), this.arenadata.get("pos7Y"), this.arenadata.get("pos7Z"), Server.getInstance().getLevelByName(this.worldname));
-    	Position pos8 = new Position(this.arenadata.get("pos8X"), this.arenadata.get("pos8Y"), this.arenadata.get("pos8Z"), Server.getInstance().getLevelByName(this.worldname));
 		Player player = event.getPlayer();
 		Block block = event.getBlock();
 		if (block.getX() == this.signX && block.getY() == this.signY && block.getZ() == this.signZ)
 		{
-			skywars.lobbyplayers.remove(player.getName());
+			for(int i = 0; i < positions.length; i++) {
+				if(!hasIndex(i, player)) {
+					player.teleport(positions[i]);
+					SkyWars.getPlayer(player).setSpawnPosition(i);
+					SkyWars.getPlayer(player).setInLobby(false);
+				}
+			}
 		}
     }
+    
+	public boolean hasIndex(int index, Player playerr) {
+		SWPlayer player = SkyWars.getPlayer(playerr);
+			if(player.getSpawnPosition() == index) {
+				return true;
+			} 
+			if(player.getSpawnPosition() > index) { //not sure, but should work. Didn't tested
+				return false;
+			}  
+		return false;
+	}
 
 	@EventHandler
 	public void handleLuckyBlockBreak(BlockBreakEvent event)
@@ -607,17 +477,6 @@ public class Arena implements Listener
     public void handleDamageEvent(EntityDamageEvent event)
 	{
         Player playerEntity = (Player) event.getEntity();
-        if (playerEntity instanceof Player)
-        {
-        	if ((playerEntity.getHealth() - event.getDamage()) < 1)
-        	{
-        		for (Player ingames : arenaplayers.values())
-        		{
-				ingames.sendMessage(LanguageManager.translate("sw_solo_all_death", ingames, playerEntity.getName()));
-				skywars.statsmanager.addDeaths(playerEntity.getName(), 1);
-        		}
-        	}
-        }
         if (event instanceof EntityDamageByEntityEvent)
 		{
             Entity damager = ((EntityDamageByEntityEvent) event).getDamager();
@@ -631,34 +490,11 @@ public class Arena implements Listener
             		{
 					ingame.sendMessage(LanguageManager.translate("sw_solo_all_death_cause_kill", ingame, hitnutyHrac.getName(), player.getName()));
 
-					skywars.statsmanager.addKills(player.getName(), 1);
-					skywars.statsmanager.addDeaths(hitnutyHrac.getName(), 1);
             		}
             	} 
             }
 		}
 	} 
-
-    
-    @EventHandler(ignoreCancelled=true)
-    public void handleChat(PlayerChatEvent event)
-    {
-    	Player player = event.getPlayer();
-    	if (arenaplayers.containsKey(player.getName())) 
-    	{
-    		event.setCancelled();
-    		//sendMessageToAll(event.getMessage(), player);
-    	}
-    }
-    
-    public void sendMessageToAll(String message, Player player)
-    {
-    	for(Player ingame : arenaplayers.values())
-    	{
-    		ingame.sendMessage("�b[�a" + this.arenaname + "�b] �r" + player.getDisplayName() + ": " + message);
-    	}
-    	
-    }
 
 
     @EventHandler
@@ -682,7 +518,7 @@ public class Arena implements Listener
 		Item item = event.getItem();
 		if (arenaplayers.containsKey(player.getName()))
 		{
-			if(item.getCustomName().equals("�eBack to lobby"))
+			if(item.getCustomName().equals("§eBack to lobby"))
 			{
 				
 			}

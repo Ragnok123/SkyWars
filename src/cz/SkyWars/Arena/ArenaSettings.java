@@ -2,7 +2,7 @@ package cz.SkyWars.Arena;
 
 import cz.SkyWars.SkyWars;
 import cn.nukkit.Server;
-import cn.nukkit.level.Position;
+import cn.nukkit.level.*;
 import cn.nukkit.block.Block;
 
 import java.util.*;
@@ -53,23 +53,26 @@ public class ArenaSettings {
 		d2.put("y", y);
 		d2.put("z", z);
 		d2.put("world", world);
-		d1.put("sign", d2);
-		SkyWars.getInstance().arenass.set(arena, d1);
+		SkyWars.getInstance().arenass.set(arena+".sign", d2);
 		SkyWars.getInstance().arenass.save();
 	}
 	
-	public void setPositions(HashMap<String, HashMap<String, Object>> d1) {
-		SkyWars.getInstance().arenass.set(arena, d1);
+	public void setPositions(int position, double x, double y, double z, String world) {
+		HashMap<String, HashMap<String, Object>> d1 = new HashMap<String, HashMap<String, Object>>();
+    	HashMap<String, Object> d2 = new HashMap<String, Object>();
+    	d2.put("x", x);
+		d2.put("y", y);
+		d2.put("z", z);
+		d2.put("world", world);
+		SkyWars.getInstance().arenass.set(arena+".pos" + String.valueOf(position), d2);
 		SkyWars.getInstance().arenass.save();
 	}
 	
 	public void setSettings(int slots, int time) {
-		HashMap<String, HashMap<String, Object>> d1 = new HashMap<String, HashMap<String, Object>>();
-		HashMap<String, Object> d2 = new HashMap<String, Object>();
-		d2.put("slots", slots);
-		d2.put("time", time);
-		d1.put("settings", d2);
-		SkyWars.getInstance().arenass.set(arena, d1);
+		HashMap<String, Object> d1 = new HashMap<String, Object>();
+		d1.put("slots", slots);
+		d1.put("time", time);
+		SkyWars.getInstance().arenass.set(arena+".settings", d1);
 		SkyWars.getInstance().arenass.save();
 	}
 	
@@ -98,6 +101,13 @@ public class ArenaSettings {
 		 return pos;
 	}
 	
+	public Level getLevel() {
+		HashMap<String,  HashMap<String, Object>> var1 = (HashMap<String, HashMap<String, Object>>) SkyWars.getInstance().arenass.get(this.arena);
+		HashMap<String, Object> var2 = var1.get("pos1");
+		String name = (String)var2.get("world");
+		return Server.getInstance().getLevelByName(name);
+	}
+	
 	public Block getSign() {
 		 Block sign;
 		 HashMap<String,  HashMap<String, Object>> var1 = (HashMap<String, HashMap<String, Object>>) SkyWars.getInstance().arenass.get(this.arena);
@@ -114,5 +124,6 @@ public class ArenaSettings {
 		 }
 		 return sign;
 	}
+	
 
 }
