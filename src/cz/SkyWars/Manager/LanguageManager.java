@@ -23,7 +23,7 @@ public class LanguageManager{
 			 englishMsg.put("arena_setup", "&eSkyWars> &aYou're setting arena §f%0");
 			 englishMsg.put("arena_sign", "&eSkyWars> &aTap on sign");
 			 englishMsg.put("arena_click", "&eSkyWars> &aOk, now click for position");
-			 englishMsg.put("arena_click", "&eSkyWars> &aYou've finished setup");
+			 englishMsg.put("arena_finish", "&eSkyWars> &aYou've finished setup");
 
              englishMsg.put("sw_solo_menu_open", "&eSkyWars> &aYou have opened kit menu");
              englishMsg.put("sw_solo_menu_close", "&eSkyWars> &aYou have closed kit menu");
@@ -75,7 +75,7 @@ public class LanguageManager{
     }
     
     public static String translate(String message, int lang, String... args) {
-        String base = LanguageManager.languages.get(lang).get(message).replaceAll("&", "�");
+        String base = LanguageManager.languages.get(lang).get(message).replaceAll("&", "§");
         for (int i = 0; i < args.length; ++i) {
             base = base.replace("%" + i, args[i]);
         }

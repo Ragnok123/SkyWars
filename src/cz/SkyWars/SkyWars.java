@@ -28,7 +28,9 @@ import cn.nukkit.event.player.*;
 import cn.nukkit.nbt.tag.*;
 import cn.nukkit.entity.passive.EntityVillager;
 import cn.nukkit.event.server.DataPacketReceiveEvent;
+import cn.nukkit.event.server.DataPacketSendEvent;
 import cn.nukkit.event.server.QueryRegenerateEvent;
+import cn.nukkit.inventory.transaction.data.UseItemData;
 import cn.nukkit.item.Item;
 import cn.nukkit.level.Level;
 import cn.nukkit.level.Location;
@@ -37,6 +39,8 @@ import cn.nukkit.level.generator.Generator;
 import cn.nukkit.level.format.FullChunk;
 import cn.nukkit.level.particle.FloatingTextParticle;
 import cn.nukkit.math.Vector3;
+import cn.nukkit.network.protocol.DataPacket;
+import cn.nukkit.network.protocol.InventoryTransactionPacket;
 import cn.nukkit.network.protocol.PlayerActionPacket;
 import cn.nukkit.network.protocol.ProtocolInfo;
 import cn.nukkit.plugin.Plugin;
@@ -134,15 +138,18 @@ public class SkyWars extends PluginBase implements Listener
 		lobbyXYZ = new Position((double)settingsc.get("lobbyX"), (double)settingsc.get("lobbyY"), (double)settingsc.get("lobbyZ"));
 		lobbyXYZ.setLevel(getServer().getLevelByName(world));
 
-		initializeArrays();
+		getServer().getScheduler().scheduleDelayedTask(new StartupTask(this), 200);
 	}	
 	
     
     public void initializeArrays()
     {
-    	Set<String> aren = arenass.getKeys();
-    	for(String arena : aren) {
-    		registerArena(arena, new Arena(this, arena, new ArenaSettings(arena)));
+    	if (arenass.getKeys() != null) {
+    		Set<String> aren = arenass.getKeys();
+        	for(String arena : aren) {
+        		ArenaSettings settings = new ArenaSettings(arena);
+        		registerArena(arena, new Arena(this, arena, settings));
+        	}
     	}
     }
     
@@ -161,6 +168,10 @@ public class SkyWars extends PluginBase implements Listener
 			event.setCancelled();
 		}
 	}
+	
+
+	
+
 
 	@EventHandler
 	public void antiBreak(BlockPlaceEvent event)
@@ -197,6 +208,8 @@ public class SkyWars extends PluginBase implements Listener
 		Player player = event.getPlayer();
 		SWPlayer data = new SWPlayer(player);
 		players.put(player.getName().toLowerCase(), data);
+		HashMap<Integer, Integer> d = new HashMap<Integer, Integer>();
+		d.put(0, -1);
 		//FloatingTextParticle floatparticle = new FloatingTextParticle(new Vector3(97.00, 30.00, 156.00), "�aNickname: �f " + player.getName() + "\n�aKills: �f" + statsmanager.getKills(player.getName()) + "\n�aDeaths: �f" + statsmanager.getDeaths(player.getName()) + "\n�aWins: �f" + statsmanager.getWins(player.getName()) + "\n", "�l�b[�eLuckyWars �bstats]");
 		//getServer().getDefaultLevel().addParticle(floatparticle, player);
 	}
@@ -229,21 +242,25 @@ public class SkyWars extends PluginBase implements Listener
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {
     	Player player = event.getPlayer();
-    	ArenaSettings settings = setup.get(player);
     	Block block = event.getBlock();
-    	int currentStep = step.get(player);
+    	Item item = event.getItem();
     	if(setup.containsKey(player)) {
-    		if(currentStep == 0) {
-        		if(block instanceof BlockSignPost || block instanceof BlockWallSign) {
-        			player.sendMessage(LanguageManager.translate("arena_sign", player, new String[0]));
-        			settings.setSign(block.x, block.y, block.z, block.getLevel().getName());
-        			resetStep(player);
-        		}
-        	}
-    		settings.setPositions(currentStep, block.x, block.y, block.z, block.getLevel().getName());
-    		player.sendMessage(LanguageManager.translate("arena_click", player, new String[0]));
-    		resetStep(player);
+    		ArenaSettings settings = setup.get(player);
+    		int currentStep = step.get(player);
+    			if (currentStep == 0) {
+    				if(block instanceof BlockSignPost || block instanceof BlockWallSign) {
+            			player.sendMessage(LanguageManager.translate("arena_click", player, new String[0]));
+            			settings.setSign(block.x, block.y, block.z, block.getLevel().getName());
+            			resetStep(player);
+            		}
+				} else if (currentStep > 0) {
+					settings.setPositions(currentStep, block.x, block.y, block.z, block.getLevel().getName());
+	        		player.sendMessage(LanguageManager.translate("arena_click", player, new String[0]));
+	        		resetStep(player);
+				} 
+    		
     	}
+    	player.sendMessage("true");
     }
     
     public void resetStep(Player player) {
@@ -251,12 +268,6 @@ public class SkyWars extends PluginBase implements Listener
     	int currentStep = step.get(player);
     	step.remove(player);
     	step.put(player, currentStep + 1);
-    	if(step.get(player) > set.getSlots()) {
-    		player.sendMessage(LanguageManager.translate("arena_finish", player, new String[0]));
-    		step.remove(player);
-    		registerArena(set.getName(), new Arena(this, set.getName(), set));
-    		setup.remove(player);
-    	}
     }
     
     
@@ -271,13 +282,19 @@ public class SkyWars extends PluginBase implements Listener
     		{
     			if(args[0].equals("create")) {
     				String arenaname = (String) args[1];
-    				int count = Integer.valueOf(args[2]);
-    				int time = Integer.valueOf(args[3]);
     				ArenaSettings set = new ArenaSettings(arenaname);
     				setup.put(player, set);
     				step.put(player, 0);
-    				set.setSettings(count,  time);
+    				set.setSettings(5);
     				player.sendMessage(LanguageManager.translate("arena_sign", ((Player) sender), new String[0]));
+    			}
+    			if(args[0].equals("finishsetup")) {
+    				player.sendMessage(LanguageManager.translate("arena_finish", player, new String[0]));
+    				ArenaSettings set = setup.get(player);
+    				set.setSlots(step.get(player) -1);
+    	    		step.remove(player);
+    	    		registerArena(set.getName(), new Arena(this, set.getName(), set));
+    	    		setup.remove(player);
     			}
     		} else {
     			((Player) sender).sendMessage(LanguageManager.translate("perms", ((Player) sender), new String[0]));

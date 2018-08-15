@@ -90,9 +90,10 @@ public class Arena implements Listener
 		random = new Random();
         this.skywars = skywars;
         this.arenaname = arenaname;
+        this.settings = settings;
 		this.waitTime = 60;
 		this.godTime = 0;
-		this.gameTime = (settings.getTime()*60) - 60;
+		this.gameTime = (settings.getTime()*60)-60;
 		this.endTime = 60;
 		this.lastTime = 0;
 		this.gameStatus = 0;
@@ -100,6 +101,7 @@ public class Arena implements Listener
 		signY = settings.getSign().y;
 		signZ = settings.getSign().z;
 		maxPlayerCount = settings.getSlots();
+		skywars.getLogger().info("arenaId: " + arenaname + "\ntime: " + settings.getTime() + "\nmaxPlayers: " + settings.getSlots());
 		initPositions();
 		
 		worldname = settings.getLevel().getName();
@@ -108,12 +110,10 @@ public class Arena implements Listener
         Server.getInstance().getScheduler().scheduleRepeatingTask(new SoloArenaTimer(this, arenaname, worldname, signX, signY, signZ, maxPlayerCount), 20);
 	}
 	
-	private void initPositions() {
-		for(int i = 1; i <= settings.getSlots(); i++) {
-			Position pos = settings.getPosition(i);
-			positions = new Position[] {
-					pos
-			};
+	public void initPositions() {
+		for(int i = 1; i <= maxPlayerCount; i++) {
+			Position pos = this.settings.getPosition(i);
+			positions = new Position[] {pos};
 		}
 	}
 	
