@@ -1,14 +1,17 @@
 # SkyWars
 SkyWars plugin for Nukkit
+Current version: 0.1 beta 
 
-Progress: 46%
+#WARNING:
+Before setup copy your skywars worlds to "arenas" folder
 
-Setup:
-  1. Type /sw create <arena_name> <slots> <time (in minutes, only full numbers!!!)>
+# Setup:
+  1. Type /sw create <arena_name> 
   2. Then tap a sign in lobby world
-  3. Then tap on positions, when plugin will say that you finished setup
+  3. Then tap on positions
+  4. when you will tap positions, just type /sw finish
 
-API example:
+# API example:
 ```java
 
 @EventHandler

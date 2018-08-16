@@ -93,8 +93,11 @@ public class SkyWars extends PluginBase implements Listener
 			settingsc.set("lobbyWorld", getServer().getDefaultLevel().getName());
 			settingsc.set("dataProvider.yaml", true);
 			settingsc.set("dataProvider.mysql", false);
-			settingsc.set("economyapi-enabled", true);
+			settingsc.set("economyapi-enabled", false);
 			settingsc.set("customeconomy-enabled", false);
+			settingsc.set("joinMessage-enabled", false);
+			settingsc.set("quitMessage-enabled", false);
+			
 			settingsc.set("reward-amount", 100);
 			settingsc.set("mysql.url", "");
 			settingsc.set("mysql.login", "");
@@ -210,6 +213,9 @@ public class SkyWars extends PluginBase implements Listener
 		SWPlayer data = new SWPlayer(player);
 		players.put(player.getName().toLowerCase(), data);
 		data.setInLobby(true);
+		if(settingsc.getBoolean("joinMessage-enabled") == true) {
+			event.setJoinMessage("");
+		}
 		//FloatingTextParticle floatparticle = new FloatingTextParticle(new Vector3(97.00, 30.00, 156.00), "�aNickname: �f " + player.getName() + "\n�aKills: �f" + statsmanager.getKills(player.getName()) + "\n�aDeaths: �f" + statsmanager.getDeaths(player.getName()) + "\n�aWins: �f" + statsmanager.getWins(player.getName()) + "\n", "�l�b[�eLuckyWars �bstats]");
 		//getServer().getDefaultLevel().addParticle(floatparticle, player);
 	}
@@ -218,6 +224,10 @@ public class SkyWars extends PluginBase implements Listener
 	public void handleQuit(PlayerQuitEvent event) {
 		Player player = event.getPlayer();
 		antiDupe.remove(player);
+		players.remove(player.getName().toLowerCase());
+		if(settingsc.getBoolean("quitMessage-enabled") == true) {
+			event.setQuitMessage("");
+		}
 	}
 
     public static SkyWars getInstance()
@@ -269,7 +279,7 @@ public class SkyWars extends PluginBase implements Listener
 					settings.setPositions(currentStep, block.x, block.y, block.z, block.getLevel().getName());
 	        		player.sendMessage(LanguageManager.translate("arena_click", player, new String[0]));
 	        		settings.f(block.getLevel().getName());
-	        		settings.positions.add(new Position(block.x, block.y + 2, block.z, block.getLevel()));
+	        		settings.positions.add(new Position(block.x, block.y + 1, block.z, block.getLevel()));
 	        		resetStep(player);
 				} 
     		

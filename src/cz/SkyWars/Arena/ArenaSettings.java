@@ -59,7 +59,7 @@ public class ArenaSettings {
 	public void setPositions(int position, double x, double y, double z, String world) {
     	HashMap<String, Object> d2 = new HashMap<String, Object>();
     	d2.put("x", x);
-		d2.put("y", y + 2);
+		d2.put("y", y + 1);
 		d2.put("z", z);
 		d2.put("world", world);
 		SkyWars.getInstance().arenass.set(arena+".pos" + String.valueOf(position), d2);

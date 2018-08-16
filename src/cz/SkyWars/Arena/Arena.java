@@ -112,11 +112,19 @@ public class Arena implements Listener
 		}
 	}
 	
-	public short[] armor1 = { 298, 298, 314, 298, 298, 314, 298, 298, 314, 302, 302, 302, 302, 302, 302, 306, 306, 310, 303, 303, 303 };
-	public short[] armor2 = { 299, 299, 315, 299, 299, 315, 299, 299, 315, 303, 303, 303, 307, 307, 311, 307, 307, 311, 307, 307, 311, 307 };
-	public short[] armor3 = { 300, 300, 316, 300, 300, 316, 300, 300, 316, 304, 304, 304, 308, 308, 312, 308, 308, 312, 308, 308, 312, 308 };
-	public short[] armor4 = { 301, 301, 317, 301, 301, 317, 301, 301, 317, 305, 305, 305, 309, 309, 313, 309, 309, 313, 309, 309, 313, 309 };
-	public short[] sword1 = { 268, 268, 283, 268, 268, 283, 268, 268, 283, 272, 272, 267, 267, 267, 276, 267, 267, 276, 267, 267, 276, 267 };
+	public void resetPositions() {
+		for(int i = 1; i <= maxPlayerCount; i++) {
+			Position pos = this.settings.getPosition(i);
+			positions.remove(pos);
+			positions.add(pos);
+		}
+	}
+	
+	public short[] armor1 = { 298, 298, 314, 298, 298, 314, 298, 298, 314, 302, 302, 302, 302, 302, 302, 306, 306, 310 };
+	public short[] armor2 = { 299, 299, 315, 299, 299, 315, 299, 299, 315, 303, 303, 303, 307, 307, 311, 307, 307, 311 };
+	public short[] armor3 = { 300, 300, 316, 300, 300, 316, 300, 300, 316, 304, 304, 304, 308, 308, 312, 308, 308, 312 };
+	public short[] armor4 = { 301, 301, 317, 301, 301, 317, 301, 301, 317, 305, 305, 305, 309, 309, 313, 309, 309, 313 };
+	public short[] sword1 = { 268, 268, 283, 268, 268, 283, 268, 268, 283, 272, 272, 267, 267, 267, 276, 267, 267, 276 };
 	public String[] itemarray = { "258", "259", "261", "262", "264", "265", "266", "267", "272", "273", "274", "275", "277", "278", "279", "280", "287", "318", "297", "320", "322", "332", "344", "350", "364", "366", "357" };
 	public short[] blockarray = { 1, 2, 3, 4, 5 };
 
@@ -384,6 +392,7 @@ public class Arena implements Listener
 				Server.getInstance().loadLevel(worldname);
 				Server.getInstance().getLevelByName(worldname).setTime(6000);
 				Server.getInstance().getLevelByName(worldname).stopTime();
+				resetPositions();
 				this.gameStatus = 0;
 				this.lastTime = 0;
 			}
@@ -396,13 +405,15 @@ public class Arena implements Listener
 						SkyWars.getPlayer(pla).setInLobby(true);
 						pla.teleport(skywars.lobbyXYZ);
 						pla.getFoodData().setLevel(20);
+						leave(pla, "leave");
 						Server.getInstance().broadcastMessage("§eSkyWars> " + pla.getDisplayName() + " §awon the game on arena §b" + this.arenaname + "");
 						//new MoneyRewardAction(pla);
 						Server.getInstance().unloadLevel(Server.getInstance().getLevelByName(worldname));
 						worldmanager.restartArena(worldname);
 						Server.getInstance().loadLevel(worldname);
 						Server.getInstance().getLevelByName(worldname).setTime(6000);
-						Server.getInstance().getLevelByName(worldname).stopTime();	
+						Server.getInstance().getLevelByName(worldname).stopTime();
+						resetPositions();
 					}
 					this.gameStatus = 0;
 					this.lastTime = 0;
@@ -433,6 +444,14 @@ public class Arena implements Listener
 				case 10:
 				case 15:
 				case 30:
+				case 59:
+					for (Player ingame : arenaplayers.values())
+					{
+						if(game(ingame)) {
+							ingame.sendMessage(LanguageManager.translate("sw_solo_time", ingame, String.valueOf(this.lastTime)));
+						}
+					}
+					break;
 				case 60:
 					Server.getInstance().getScheduler().scheduleAsyncTask(new RefillTimer(this));
 					for (Player ingame : arenaplayers.values())
@@ -451,6 +470,7 @@ public class Arena implements Listener
 							SkyWars.getPlayer(pla).setInLobby(true);
 							pla.teleport(skywars.lobbyXYZ);
 							pla.getFoodData().setLevel(20);
+							leave(pla, "leave");
 							Server.getInstance().broadcastMessage("§eSkyWars> §aNoone didnt won the game on arena §b" + this.arenaname + "");
 							Server.getInstance().unloadLevel(Server.getInstance().getLevelByName(worldname));
 							worldmanager.restartArena(worldname);
@@ -491,9 +511,9 @@ public class Arena implements Listener
     			chest.getInventory().setItem(3, getBootsItem());
     			chest.getInventory().setItem(4, getSwordItem());
     			int rand = mt_rand(1,8);
-    			for(int i = 1; 1 <= rand; i++) {
-    				chest.getInventory().setItem(mt_rand(5,10), getRandomItem());
-    				chest.getInventory().setItem(mt_rand(12,17), getRandomBlock());
+    			for(int i = 1; i <= rand; i++) {
+    				chest.getInventory().setItem(mt_rand(5,11), getRandomItem());
+    				chest.getInventory().setItem(mt_rand(12,16), getRandomBlock());
     			}
     		}
     	}
@@ -532,6 +552,19 @@ public class Arena implements Listener
 					ingame.sendMessage(LanguageManager.translate("sw_solo_all_death", ingame, player.getName()));
 				}
 			}
+    	}
+    	if(cause == "kill") {
+    		arenaplayers.remove(player.getName());
+    		data.setInLobby(true);
+    		Map<Integer, Item> items = player.getInventory().getContents();
+    		for(Item item : items.values()) {
+    			player.getLevel().dropItem(player.getPosition(), item);
+    		}
+			player.getInventory().clearAll();
+			player.setHealth(20);
+			player.getFoodData().setLevel(20);
+			player.setImmobile(false);
+			player.teleport(skywars.lobbyXYZ);
     	}
     	if(cause == "leave") {
     		arenaplayers.remove(player.getName());
@@ -638,11 +671,14 @@ public class Arena implements Listener
             {
             	if ((hitnutyHrac.getHealth() - event.getDamage()) < 1)
             	{
-            		for (Player ingame : arenaplayers.values())
-            		{
-            			if(game(player) && game(ingame)) {
-        					ingame.sendMessage(LanguageManager.translate("sw_solo_all_death_cause_kill", ingame, hitnutyHrac.getName(), player.getName()));
-            			}
+            		if(!arenaplayers.isEmpty()) {
+                		for (Player ingame : arenaplayers.values())
+                		{
+                			if(game(player) && game(ingame) && game(hitnutyHrac)) {
+            					ingame.sendMessage(LanguageManager.translate("sw_solo_all_death_cause_kill", ingame, hitnutyHrac.getName(), player.getName()));
+            					leave(hitnutyHrac, "kill");
+                			}
+                		}
             		}
             	} 
             }
@@ -658,6 +694,7 @@ public class Arena implements Listener
         if (arenaplayers.containsKey(player.getName()))
 		{
 			event.setDeathMessage("");
+			event.setDrops(new Item[0]);
         }
     }
     
@@ -690,7 +727,9 @@ public class Arena implements Listener
 	public void handleDrop(PlayerDropItemEvent event) {
 		Player player = event.getPlayer();
 		if(game(player)) {
-			event.setCancelled();
+			if(gameStatus < 2) {
+				event.setCancelled();
+			}
 		}
 	}
 
