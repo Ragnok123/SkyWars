@@ -138,16 +138,16 @@ public class SkyWars extends PluginBase implements Listener
 		lobbyXYZ = new Position((double)settingsc.get("lobbyX"), (double)settingsc.get("lobbyY"), (double)settingsc.get("lobbyZ"));
 		lobbyXYZ.setLevel(getServer().getLevelByName(world));
 
-		getServer().getScheduler().scheduleDelayedTask(new StartupTask(this), 200);
+		getServer().getScheduler().scheduleDelayedTask(new StartupTask(this), 20);
 	}	
 	
     
     public void initializeArrays()
     {
     	if (arenass.getKeys() != null) {
-    		Set<String> aren = arenass.getKeys();
+    		Set<String> aren = arenass.getKeys(false);
         	for(String arena : aren) {
-        		ArenaSettings settings = new ArenaSettings(arena);
+        		ArenaSettings settings = new ArenaSettings(arena, false);
         		registerArena(arena, new Arena(this, arena, settings));
         	}
     	}
@@ -208,8 +208,7 @@ public class SkyWars extends PluginBase implements Listener
 		Player player = event.getPlayer();
 		SWPlayer data = new SWPlayer(player);
 		players.put(player.getName().toLowerCase(), data);
-		HashMap<Integer, Integer> d = new HashMap<Integer, Integer>();
-		d.put(0, -1);
+		data.setInLobby(true);
 		//FloatingTextParticle floatparticle = new FloatingTextParticle(new Vector3(97.00, 30.00, 156.00), "�aNickname: �f " + player.getName() + "\n�aKills: �f" + statsmanager.getKills(player.getName()) + "\n�aDeaths: �f" + statsmanager.getDeaths(player.getName()) + "\n�aWins: �f" + statsmanager.getWins(player.getName()) + "\n", "�l�b[�eLuckyWars �bstats]");
 		//getServer().getDefaultLevel().addParticle(floatparticle, player);
 	}
@@ -223,7 +222,7 @@ public class SkyWars extends PluginBase implements Listener
     public void handleHunger(PlayerFoodLevelChangeEvent event)
     {
     	Player player = event.getPlayer();
-    	if(player.getLevel() == getServer().getDefaultLevel() && SkyWars.getPlayer(player).isInLobby())
+    	if(player.getLevel() == getServer().getDefaultLevel())
     	{
     		event.setCancelled();
     	}
@@ -243,7 +242,6 @@ public class SkyWars extends PluginBase implements Listener
     public void onInteract(PlayerInteractEvent event) {
     	Player player = event.getPlayer();
     	Block block = event.getBlock();
-    	Item item = event.getItem();
     	if(setup.containsKey(player)) {
     		ArenaSettings settings = setup.get(player);
     		int currentStep = step.get(player);
@@ -251,6 +249,8 @@ public class SkyWars extends PluginBase implements Listener
     				if(block instanceof BlockSignPost || block instanceof BlockWallSign) {
             			player.sendMessage(LanguageManager.translate("arena_click", player, new String[0]));
             			settings.setSign(block.x, block.y, block.z, block.getLevel().getName());
+            			settings.fakeBlock = block;
+            			settings.fakeLevel1 = player.getLevel().getName();
             			resetStep(player);
             		}
 				} else if (currentStep > 0) {
@@ -260,7 +260,6 @@ public class SkyWars extends PluginBase implements Listener
 				} 
     		
     	}
-    	player.sendMessage("true");
     }
     
     public void resetStep(Player player) {
@@ -282,13 +281,13 @@ public class SkyWars extends PluginBase implements Listener
     		{
     			if(args[0].equals("create")) {
     				String arenaname = (String) args[1];
-    				ArenaSettings set = new ArenaSettings(arenaname);
+    				ArenaSettings set = new ArenaSettings(arenaname, true);
     				setup.put(player, set);
     				step.put(player, 0);
     				set.setSettings(5);
     				player.sendMessage(LanguageManager.translate("arena_sign", ((Player) sender), new String[0]));
     			}
-    			if(args[0].equals("finishsetup")) {
+    			if(args[0].equals("finish")) {
     				player.sendMessage(LanguageManager.translate("arena_finish", player, new String[0]));
     				ArenaSettings set = setup.get(player);
     				set.setSlots(step.get(player) -1);

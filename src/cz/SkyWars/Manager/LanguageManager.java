@@ -65,6 +65,7 @@ public class LanguageManager{
              englishMsg.put("sw_solo_game_end_with_winners", "&eSkyWars> &b%0 &ahas won the game");
              englishMsg.put("sw_solo_all_death", "&eSkyWars> %0 &ajust died");
              englishMsg.put("sw_solo_all_death_cause_kill", "&eSkyWars> %0 &awas killed by %1");
+             englishMsg.put("chest_refill", "&eSkyWars> &aChests have been refilled");
 
              languages.put(0, englishMsg);
     }
