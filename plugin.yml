@@ -3,6 +3,7 @@ main: cz.SkyWars.SkyWars
 version: "1.0"
 api: ["1.0.0"]
 author: "Ragnok123"
+load: POSTWORLD
 commands:
  sw:
   description: "sw command"

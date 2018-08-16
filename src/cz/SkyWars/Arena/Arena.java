@@ -70,13 +70,7 @@ public class Arena implements Listener
 	public int finalWeight = 5;
 
 	public Random random;
-	public HashMap<Integer, Weight> armor1 = new HashMap<Integer, Weight>();
-	public HashMap<Integer, Weight> armor2 = new HashMap<Integer, Weight>();
-	public HashMap<Integer, Weight> armor3 = new HashMap<Integer, Weight>();
-	public HashMap<Integer, Weight> armor4 = new HashMap<Integer, Weight>();
-	public HashMap<Integer, Weight> sword1 = new HashMap<Integer, Weight>();
-	public HashMap<Integer, Weight> itemarray = new HashMap<Integer, Weight>();
-	public HashMap<Integer, Weight> blockarray = new HashMap<Integer, Weight>();
+
 
 	public HashMap<String, Player> arenaplayers = new HashMap<String, Player>();
 
@@ -89,9 +83,6 @@ public class Arena implements Listener
         this.skywars = skywars;
         this.arenaname = arenaname;
         this.settings = settings;
-        if(!skywars.getServer().isLevelLoaded(settings.getLevel().getName())) {
-        	Server.getInstance().loadLevel(settings.getLevel().getName());
-        }
 		skywars.getLogger().info("arenaId: " + arenaname + "\ntime: " + settings.getTime() + "\nmaxPlayers: " + settings.getSlots());
 		this.waitTime = 60;
 		this.godTime = 0;
@@ -103,13 +94,15 @@ public class Arena implements Listener
 		signY = settings.getSign().y;
 		signZ = settings.getSign().z;
 		maxPlayerCount = settings.getSlots();
-		initPositions();
-		initChests();
-		
-		worldname = settings.getLevel().getName();
+
+		worldname = settings.getWorld();
         worldmanager = new ArenaWorldManager(this);
         worldmanager.restartArena(worldname);
-        Server.getInstance().getScheduler().scheduleRepeatingTask(new SoloArenaTimer(this, arenaname, worldname, signX, signY, signZ, maxPlayerCount), 20);
+		Server.getInstance().loadLevel(worldname);
+		Server.getInstance().getLevelByName(worldname).setTime(6000);
+		Server.getInstance().getLevelByName(worldname).stopTime();
+		initPositions();
+		Server.getInstance().getScheduler().scheduleRepeatingTask(new SoloArenaTimer(this, arenaname, worldname, signX, signY, signZ, maxPlayerCount), 20);
 	}
 	
 	public void initPositions() {
@@ -119,161 +112,53 @@ public class Arena implements Listener
 		}
 	}
 	
-	
-	public void initChests()
-	{
-		armor1.put(298, new Weight(1, 1, 1));
-		armor1.put(302, new Weight(2, 1, 1));
-		armor1.put(306, new Weight(3, 1, 1));
-		armor1.put(310, new Weight(4, 1, 1));
-		armor1.put(314, new Weight(5, 1, 1));
-		
- 		armor2.put(299, new Weight(1, 1, 1));
-		armor2.put(303, new Weight(2, 1, 1));
-		armor2.put(307, new Weight(3, 1, 1));
-		armor2.put(311, new Weight(4, 1, 1));
-		armor2.put(315, new Weight(5, 1, 1));
-		
- 		armor3.put(300, new Weight(1, 1, 1));
-		armor3.put(304, new Weight(2, 1, 1));
-		armor3.put(308, new Weight(3, 1, 1));
-		armor3.put(312, new Weight(4, 1, 1));
-		armor3.put(316, new Weight(5, 1, 1));
-		
- 		armor4.put(301, new Weight(1, 1, 1));
-		armor4.put(305, new Weight(2, 1, 1));
-		armor4.put(309, new Weight(3, 1, 1));
-		armor4.put(313, new Weight(4, 1, 1));
-		armor4.put(317, new Weight(5, 1, 1));
-		
- 		sword1.put(267, new Weight(1, 1, 2));
-		sword1.put(268, new Weight(2, 1, 2));
-		sword1.put(272, new Weight(3, 1, 2));
-		sword1.put(276, new Weight(4, 1, 2));
-		
- 		itemarray.put(258, new Weight(1, 1, 1));
-		itemarray.put(261, new Weight(2, 1, 1));
-		itemarray.put(262, new Weight(3, 1, 18));
-		itemarray.put(260, new Weight(4, 1, 10));
-		itemarray.put(264, new Weight(5, 1, 1));
-		itemarray.put(275, new Weight(6, 1, 1));
-		itemarray.put(332, new Weight(7, 1, 16));
-		
-		blockarray.put(1, new Weight(1, 32, 64));
-		blockarray.put(2, new Weight(2, 32, 64));
- 		blockarray.put(3, new Weight(3, 32, 64));
-		blockarray.put(4, new Weight(4, 32, 64));
-		blockarray.put(5, new Weight(5, 32, 64));
-	}
+	public short[] armor1 = { 298, 298, 314, 298, 298, 314, 298, 298, 314, 302, 302, 302, 302, 302, 302, 306, 306, 310, 303, 303, 303 };
+	public short[] armor2 = { 299, 299, 315, 299, 299, 315, 299, 299, 315, 303, 303, 303, 307, 307, 311, 307, 307, 311, 307, 307, 311, 307 };
+	public short[] armor3 = { 300, 300, 316, 300, 300, 316, 300, 300, 316, 304, 304, 304, 308, 308, 312, 308, 308, 312, 308, 308, 312, 308 };
+	public short[] armor4 = { 301, 301, 317, 301, 301, 317, 301, 301, 317, 305, 305, 305, 309, 309, 313, 309, 309, 313, 309, 309, 313, 309 };
+	public short[] sword1 = { 268, 268, 283, 268, 268, 283, 268, 268, 283, 272, 272, 267, 267, 267, 276, 267, 267, 276, 267, 267, 276, 267 };
+	public String[] itemarray = { "258", "259", "261", "262", "264", "265", "266", "267", "272", "273", "274", "275", "277", "278", "279", "280", "287", "318", "297", "320", "322", "332", "344", "350", "364", "366", "357" };
+	public short[] blockarray = { 1, 2, 3, 4, 5 };
+
 	
  	public Item getHelmetItem()
 	{
-		int count = 0;
-		int num = random.nextInt(finalWeight);
-		for (Map.Entry<Integer, Weight> entry : armor1.entrySet())
-		{
-			count += entry.getValue().weight;
-			if (count >= num)
-			{
-				return Item.get(entry.getKey(), 0, new Random().nextInt((entry.getValue().max - entry.getValue().min) + 1) + entry.getValue().min);
-			}
-		}
-		return Item.get(0);
+ 		return Item.get(armor1[mt_rand(0,armor1.length)], 0, 1);
 	}
  	
  	public Item getChestplaceItem()
 	{
-		int count = 0;
-		int num = random.nextInt(finalWeight);
-		for (Map.Entry<Integer, Weight> entry : armor2.entrySet())
-		{
-			count += entry.getValue().weight;
-			if (count >= num)
-			{
-				return Item.get(entry.getKey(), 0, new Random().nextInt((entry.getValue().max - entry.getValue().min) + 1) + entry.getValue().min);
-			}
-		}
-		return Item.get(0);
+ 		return Item.get(armor2[mt_rand(0,armor2.length)], 0, 1);
 	}
  	
  	public Item getLeggingsItem()
 	{
-		int count = 0;
-		int num = random.nextInt(finalWeight);
-		for (Map.Entry<Integer, Weight> entry : armor3.entrySet())
-		{
-			count += entry.getValue().weight;
-			if (count >= num)
-			{
-				return Item.get(entry.getKey(), 0, new Random().nextInt((entry.getValue().max - entry.getValue().min) + 1) + entry.getValue().min);
-			}
-		}
-		return Item.get(0);
+ 		return Item.get(armor3[mt_rand(0,armor3.length)], 0, 1);
 	}
  	
  	public Item getBootsItem()
 	{
-		int count = 0;
-		int num = random.nextInt(finalWeight);
-		for (Map.Entry<Integer, Weight> entry : armor4.entrySet())
-		{
-			count += entry.getValue().weight;
-			if (count >= num)
-			{
-				return Item.get(entry.getKey(), 0, new Random().nextInt((entry.getValue().max - entry.getValue().min) + 1) + entry.getValue().min);
-			}
-		}
-		return Item.get(0);
+ 		return Item.get(armor4[mt_rand(0,armor4.length)], 0, 1);
 	}
  	
  	public Item getSwordItem()
 	{
-		int count = 0;
-		int num = random.nextInt(4);
-		for (Map.Entry<Integer, Weight> entry : sword1.entrySet())
-		{
-			count += entry.getValue().weight;
-			if (count >= num)
-			{
-				return Item.get(entry.getKey(), 0, new Random().nextInt((entry.getValue().max - entry.getValue().min) + 1) + entry.getValue().min);
-			}
-		}
-		return Item.get(0);
+ 		return Item.get(sword1[mt_rand(0,sword1.length)], 0, 1);
 	}
  	
  	public Item getRandomItem()
 	{
-		int count = 0;
-		int num = random.nextInt(7);
-		for (Map.Entry<Integer, Weight> entry : itemarray.entrySet())
-		{
-			count += entry.getValue().weight;
-			if (count >= num)
-			{
-				return Item.get(entry.getKey(), 0, new Random().nextInt((entry.getValue().max - entry.getValue().min) + 1) + entry.getValue().min);
-			}
-		}
-		return Item.get(0);
+ 		return Item.get(Short.valueOf(itemarray[mt_rand(0,itemarray.length)]), 0, mt_rand(1,12));
 	}
  	
  	public Item getRandomBlock()
 	{
-		int count = 0;
-		int num = random.nextInt(finalWeight);
-		for (Map.Entry<Integer, Weight> entry : blockarray.entrySet())
-		{
-			count += entry.getValue().weight;
-			if (count >= num)
-			{
-				return Item.get(entry.getKey(), 0, new Random().nextInt((entry.getValue().max - entry.getValue().min) + 1) + entry.getValue().min);
-			}
-		}
-		return Item.get(0);
+ 		return Item.get(blockarray[mt_rand(0,blockarray.length)], 0, mt_rand(12,30));
 	}
-	
-	
-	
-
+ 	
+ 	public int mt_rand(int min, int max) {
+ 		return (int) (Math.random()*(max-min))+min;
+ 	}
 	
 	public void signChange(String arenaname, double signX, double signY, double signZ, int maxPlayerCount)
 	{
@@ -461,8 +346,7 @@ public class Arena implements Listener
 					}
 					break;
 				case 0:
-					clearChest();
-					resetChest();
+					Server.getInstance().getScheduler().scheduleAsyncTask(new RefillTimer(this));
 					this.gameStatus = 2;
 					this.lastTime = this.godTime;
 					Server.getInstance().getLogger().info("Game started on arena " + this.arenaname);
@@ -513,7 +397,7 @@ public class Arena implements Listener
 						pla.teleport(skywars.lobbyXYZ);
 						pla.getFoodData().setLevel(20);
 						Server.getInstance().broadcastMessage("§eSkyWars> " + pla.getDisplayName() + " §awon the game on arena §b" + this.arenaname + "");
-						new MoneyRewardAction(pla);
+						//new MoneyRewardAction(pla);
 						Server.getInstance().unloadLevel(Server.getInstance().getLevelByName(worldname));
 						worldmanager.restartArena(worldname);
 						Server.getInstance().loadLevel(worldname);
@@ -550,8 +434,7 @@ public class Arena implements Listener
 				case 15:
 				case 30:
 				case 60:
-					clearChest();
-					resetChest();
+					Server.getInstance().getScheduler().scheduleAsyncTask(new RefillTimer(this));
 					for (Player ingame : arenaplayers.values())
 					{
 						if(game(ingame)) {
@@ -584,10 +467,9 @@ public class Arena implements Listener
 	}
     
     public void clearChest() {
-    	Level level = settings.getLevel();
+    	Level level = Server.getInstance().getLevelByName(settings.getWorld());
     	Map<Long, BlockEntity> be = level.getBlockEntities();
-    	for(Map.Entry<Long,BlockEntity> entry : be.entrySet()) {
-    		BlockEntity b = entry.getValue();
+    	for(BlockEntity b : be.values()) {
     		if(b instanceof BlockEntityChest) {
     			BlockEntityChest chest = (BlockEntityChest) b;
     			for(int i = 0; i <= chest.getSize(); i++) {
@@ -598,10 +480,9 @@ public class Arena implements Listener
     }
     
     public void resetChest() {
-    	Level level = settings.getLevel();
+    	Level level = Server.getInstance().getLevelByName(settings.getWorld());
     	Map<Long, BlockEntity> be = level.getBlockEntities();
-    	for(Map.Entry<Long,BlockEntity> entry : be.entrySet()) {
-    		BlockEntity b = entry.getValue();
+    	for(BlockEntity b : be.values()) {
     		if(b instanceof BlockEntityChest) {
     			BlockEntityChest chest = (BlockEntityChest) b;
     			chest.getInventory().setItem(0, getHelmetItem());
@@ -609,10 +490,10 @@ public class Arena implements Listener
     			chest.getInventory().setItem(2, getLeggingsItem());
     			chest.getInventory().setItem(3, getBootsItem());
     			chest.getInventory().setItem(4, getSwordItem());
-    			int rand = new Random(1).nextInt(8);
+    			int rand = mt_rand(1,8);
     			for(int i = 1; 1 <= rand; i++) {
-    				chest.getInventory().setItem(new Random(5).nextInt(10), getRandomItem());
-    				chest.getInventory().setItem(new Random(11).nextInt(16), getRandomBlock());
+    				chest.getInventory().setItem(mt_rand(5,10), getRandomItem());
+    				chest.getInventory().setItem(mt_rand(12,17), getRandomBlock());
     			}
     		}
     	}
@@ -638,25 +519,33 @@ public class Arena implements Listener
     public void leave(Player player, String cause) {
     	SWPlayer data = SkyWars.getPlayer(player);
     	if(cause == "void") {
+    		arenaplayers.remove(player.getName());
     		data.setInLobby(true);
 			player.getInventory().clearAll();
 			player.setHealth(20);
 			player.getFoodData().setLevel(20);
+			player.setImmobile(false);
 			player.teleport(skywars.lobbyXYZ);
 			for (Player ingame : arenaplayers.values()) 
 			{
-				ingame.sendMessage(LanguageManager.translate("sw_solo_all_death", ingame, player.getName()));
+				if(game(ingame)) {
+					ingame.sendMessage(LanguageManager.translate("sw_solo_all_death", ingame, player.getName()));
+				}
 			}
     	}
     	if(cause == "leave") {
+    		arenaplayers.remove(player.getName());
     		data.setInLobby(true);
 			player.getInventory().clearAll();
 			player.setHealth(20);
 			player.getFoodData().setLevel(20);
+			player.setImmobile(false);
 			player.teleport(skywars.lobbyXYZ);
 			for (Player ingame : arenaplayers.values()) 
 			{
-				ingame.sendMessage(LanguageManager.translate("sw_solo_all_quit", ingame, player.getName()));
+				if(game(ingame)) {
+					ingame.sendMessage(LanguageManager.translate("sw_solo_all_quit", ingame, player.getName()));	
+				}
 			}
     	}
     }
@@ -689,7 +578,7 @@ public class Arena implements Listener
 	{
 		Player player = event.getPlayer();
 		Block block = event.getBlock();
-		if(this.gameStatus > 2){ 
+		if(this.gameStatus < 2){ 
 			if(player.getLevel() == Server.getInstance().getLevelByName(this.worldname) && game(player))
 			{
 				event.setCancelled();

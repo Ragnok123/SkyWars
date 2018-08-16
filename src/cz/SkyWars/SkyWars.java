@@ -68,6 +68,7 @@ public class SkyWars extends PluginBase implements Listener
 	public HashMap<Player, ArenaSettings> setup = new HashMap<Player, ArenaSettings>();
 	public HashMap<Player, Integer> step = new HashMap<Player, Integer>();
 	public static HashMap<String, SWPlayer> players = new HashMap<String, SWPlayer>();
+	HashMap<Player, Long> antiDupe = new HashMap<Player, Long>();
 
 	@Override
 	public void onLoad()
@@ -134,7 +135,7 @@ public class SkyWars extends PluginBase implements Listener
 		arenass = new Config(getDataFolder() + "/arenas.yml", Config.YAML);
 		cplayers = new Config(getDataFolder() + "/arenas.yml", Config.YAML);
 		/* Positions */
-		String world =  (String) settingsc.get("lobbyWorld") ;
+		String world =  (String) settingsc.getString("lobbyWorld") ;
 		lobbyXYZ = new Position((double)settingsc.get("lobbyX"), (double)settingsc.get("lobbyY"), (double)settingsc.get("lobbyZ"));
 		lobbyXYZ.setLevel(getServer().getLevelByName(world));
 
@@ -212,6 +213,12 @@ public class SkyWars extends PluginBase implements Listener
 		//FloatingTextParticle floatparticle = new FloatingTextParticle(new Vector3(97.00, 30.00, 156.00), "�aNickname: �f " + player.getName() + "\n�aKills: �f" + statsmanager.getKills(player.getName()) + "\n�aDeaths: �f" + statsmanager.getDeaths(player.getName()) + "\n�aWins: �f" + statsmanager.getWins(player.getName()) + "\n", "�l�b[�eLuckyWars �bstats]");
 		//getServer().getDefaultLevel().addParticle(floatparticle, player);
 	}
+	
+	@EventHandler
+	public void handleQuit(PlayerQuitEvent event) {
+		Player player = event.getPlayer();
+		antiDupe.remove(player);
+	}
 
     public static SkyWars getInstance()
 	{
@@ -242,13 +249,18 @@ public class SkyWars extends PluginBase implements Listener
     public void onInteract(PlayerInteractEvent event) {
     	Player player = event.getPlayer();
     	Block block = event.getBlock();
+    	antiDupe.put(player, System.currentTimeMillis()+1000);
+    	if(antiDupe.get(player) >= System.currentTimeMillis()) {
+    		antiDupe.remove(player);
+    		antiDupe.put(player, System.currentTimeMillis()+100);
+    	}
     	if(setup.containsKey(player)) {
     		ArenaSettings settings = setup.get(player);
     		int currentStep = step.get(player);
     			if (currentStep == 0) {
     				if(block instanceof BlockSignPost || block instanceof BlockWallSign) {
             			player.sendMessage(LanguageManager.translate("arena_click", player, new String[0]));
-            			settings.setSign(block.x, block.y, block.z, block.getLevel().getName());
+            			settings.setSign(block, block.x, block.y, block.z, block.getLevel().getName());
             			settings.fakeBlock = block;
             			settings.fakeLevel1 = player.getLevel().getName();
             			resetStep(player);
@@ -256,6 +268,8 @@ public class SkyWars extends PluginBase implements Listener
 				} else if (currentStep > 0) {
 					settings.setPositions(currentStep, block.x, block.y, block.z, block.getLevel().getName());
 	        		player.sendMessage(LanguageManager.translate("arena_click", player, new String[0]));
+	        		settings.f(block.getLevel().getName());
+	        		settings.positions.add(new Position(block.x, block.y + 2, block.z, block.getLevel()));
 	        		resetStep(player);
 				} 
     		

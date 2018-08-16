@@ -14,7 +14,9 @@ public class ArenaSettings {
 	private String arena;
 	public Block fakeBlock = null;
 	public String fakeLevel1;
+	public String fakeLevel2;
 	private boolean s;
+	public List<Position> positions = new ArrayList<Position>();
 	
 	public ArenaSettings(String arena, boolean s) {
 		this.arena = arena;
@@ -31,7 +33,7 @@ public class ArenaSettings {
 		 return slots;
 	}
 	
-	public void setSign(double x, double y, double z, String world) {
+	public void setSign(Block block, double x, double y, double z, String world) {
 		HashMap<String, Object> d2 = new HashMap<String, Object>();
 		d2.put("x", x);
 		d2.put("y", y);
@@ -39,6 +41,19 @@ public class ArenaSettings {
 		d2.put("world", world);
 		SkyWars.getInstance().arenass.set(arena+".sign", d2);
 		SkyWars.getInstance().arenass.save();
+		this.fakeBlock = block;
+	}
+	
+	public String getWorld() {
+		if(s == true) {
+			return fakeLevel2;
+		} else {
+			return getWorld2();
+		}
+	}
+	
+	public void f(String s) {
+		fakeLevel2 = s;
 	}
 	
 	public void setPositions(int position, double x, double y, double z, String world) {
@@ -74,9 +89,16 @@ public class ArenaSettings {
 		 double x = SkyWars.getInstance().arenass.getDouble(this.arena+".pos"+slot+".x");
 		 double y = SkyWars.getInstance().arenass.getDouble(this.arena+".pos"+slot+".y");
 		 double z = SkyWars.getInstance().arenass.getDouble(this.arena+".pos"+slot+".z");
-		 String name = SkyWars.getInstance().arenass.getString(this.arena+".pos"+slot+".world");
-		 Position pos = new Position(x,y,z, Server.getInstance().getLevelByName(name));
-		 return pos;
+		 String name = getWorld();
+		 if(s == true) {
+			 return positions.get(slot-1);
+		 } else {
+			 return new Position(x,y,z, Server.getInstance().getLevelByName(name));
+		 }
+	}
+	
+	public String getWorld2() {
+		return SkyWars.getInstance().arenass.getString(this.arena+".pos1.world");
 	}
 	
 	public Level getLevel() {
@@ -92,7 +114,7 @@ public class ArenaSettings {
 		 String name = (String)SkyWars.getInstance().arenass.getString(this.arena+".sign.world");
 		 Position pos = new Position(x,y,z, Server.getInstance().getLevelByName(name));
 		 Block sign;
-		 if(s) {
+		 if(s == true) {
 			 sign = Server.getInstance().getLevelByName(fakeLevel1).getBlock(pos);
 		 } else {
 			 sign = Server.getInstance().getLevelByName(name).getBlock(pos);
