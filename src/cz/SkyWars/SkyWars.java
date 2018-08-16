@@ -84,6 +84,8 @@ public class SkyWars extends PluginBase implements Listener
 		instance = this;
 		getServer().getPluginManager().registerEvents(this, this);
 		
+		new File(getServer().getDataPath() + "arenas/").mkdirs();
+		
 		File settingsFile = new File(getDataFolder() + "/settings.yml");
 		if(!settingsFile.exists()) {
 			settingsc = new Config(getDataFolder() + "/settings.yml", Config.YAML);
