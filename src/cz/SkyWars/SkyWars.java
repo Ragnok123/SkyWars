@@ -58,6 +58,7 @@ public class SkyWars extends PluginBase implements Listener
 	public static SkyWars instance;
 	public MySQL mysql;
 	public Position lobbyXYZ;
+	public Position hologramXYZ;
 	public Database database;
 
 	public HashMap<String, Arena> arenas = new HashMap<String, Arena>();
@@ -99,6 +100,11 @@ public class SkyWars extends PluginBase implements Listener
 			settingsc.set("customeconomy-enabled", false);
 			settingsc.set("joinMessage-enabled", false);
 			settingsc.set("quitMessage-enabled", false);
+			settingsc.set("hologram-enabled", false);
+			settingsc.set("hologramX", getServer().getDefaultLevel().getSafeSpawn().getX());
+			settingsc.set("hologramY", getServer().getDefaultLevel().getSafeSpawn().getY() + 1.5);
+			settingsc.set("hologramZ", getServer().getDefaultLevel().getSafeSpawn().getZ());
+			settingsc.set("hologramWorld", getServer().getDefaultLevel().getName());
 			
 			settingsc.set("reward-amount", 100);
 			settingsc.set("mysql.url", "");
@@ -138,12 +144,14 @@ public class SkyWars extends PluginBase implements Listener
 		}
 		
 		arenass = new Config(getDataFolder() + "/arenas.yml", Config.YAML);
-		cplayers = new Config(getDataFolder() + "/arenas.yml", Config.YAML);
+		cplayers = new Config(getDataFolder() + "/players.yml", Config.YAML);
 		/* Positions */
 		String world =  (String) settingsc.getString("lobbyWorld") ;
 		lobbyXYZ = new Position((double)settingsc.get("lobbyX"), (double)settingsc.get("lobbyY"), (double)settingsc.get("lobbyZ"));
 		lobbyXYZ.setLevel(getServer().getLevelByName(world));
-
+		hologramXYZ = new Position((double)settingsc.get("lobbyX"), (double)settingsc.get("lobbyY"), (double)settingsc.get("lobbyZ"));
+		String world1 =  (String) settingsc.getString("hologramWorld") ;
+		hologramXYZ.setLevel(getServer().getLevelByName(world1));
 		getServer().getScheduler().scheduleDelayedTask(new StartupTask(this), 20);
 	}	
 	
@@ -218,8 +226,11 @@ public class SkyWars extends PluginBase implements Listener
 		if(settingsc.getBoolean("joinMessage-enabled") == true) {
 			event.setJoinMessage("");
 		}
-		//FloatingTextParticle floatparticle = new FloatingTextParticle(new Vector3(97.00, 30.00, 156.00), "�aNickname: �f " + player.getName() + "\n�aKills: �f" + statsmanager.getKills(player.getName()) + "\n�aDeaths: �f" + statsmanager.getDeaths(player.getName()) + "\n�aWins: �f" + statsmanager.getWins(player.getName()) + "\n", "�l�b[�eLuckyWars �bstats]");
-		//getServer().getDefaultLevel().addParticle(floatparticle, player);
+		if(settingsc.getBoolean("hologram-enabled") == true) {
+			String world1 =  (String) settingsc.getString("hologramWorld");
+			FloatingTextParticle floatparticle = new FloatingTextParticle(hologramXYZ, "§aNickname: §f " + player.getName() + "\n§aKills: §f" + data.getKills() + "\n§aDeaths: §f" + data.getDeaths() + "\n§aWins: §f" + data.getWins() + "\n", "§l§b[§eSkyWars §bstats]");
+			getServer().getLevelByName(world1).addParticle(floatparticle, player);
+		}
 	}
 	
 	@EventHandler

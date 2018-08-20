@@ -44,6 +44,12 @@ import java.util.*;
 public class Arena implements Listener
 {
 
+	public enum ArenaType{
+		SOLO,
+		TEAM,
+		LUCKY,
+		LUCKY_TEAM;
+	}
 
 	public SkyWars skywars;
 	public ArenaWorldManager worldmanager;
@@ -402,6 +408,7 @@ public class Arena implements Listener
 				{
 					if(game(pla)) {
 						pla.getInventory().clearAll();
+						SkyWars.getPlayer(pla).addWin();
 						SkyWars.getPlayer(pla).setInLobby(true);
 						pla.teleport(skywars.lobbyXYZ);
 						pla.getFoodData().setLevel(20);
@@ -627,8 +634,9 @@ public class Arena implements Listener
 		{
 			if (this.gameStatus > 2)
 			{
-				if (player.getY() < 10)
+				if (player.getY() < 0)
 				{
+					SkyWars.getPlayer(player).addDeath();
 					leave(player, "void");
 				}
             }
@@ -675,6 +683,8 @@ public class Arena implements Listener
                 		for (Player ingame : arenaplayers.values())
                 		{
                 			if(game(player) && game(ingame) && game(hitnutyHrac)) {
+                				SkyWars.getPlayer(player).addKill();
+                				SkyWars.getPlayer(hitnutyHrac).addDeath();
             					ingame.sendMessage(LanguageManager.translate("sw_solo_all_death_cause_kill", ingame, hitnutyHrac.getName(), player.getName()));
             					leave(hitnutyHrac, "kill");
                 			}
