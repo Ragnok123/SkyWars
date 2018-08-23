@@ -17,12 +17,16 @@ public class ArenaSettings {
 	public String fakeLevel2;
 	private boolean s;
 	public List<Position> positions = new ArrayList<Position>();
+	public String mode;
 	
 	public ArenaSettings(String arena, boolean s) {
 		this.arena = arena;
 		this.s = s;
 	}
 	
+	public String getMode() {
+		return this.mode;
+	}
 	
 	public String getName() {
 		return this.arena;

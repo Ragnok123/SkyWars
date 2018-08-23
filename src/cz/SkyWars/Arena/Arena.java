@@ -414,7 +414,7 @@ public class Arena implements Listener
 						pla.getFoodData().setLevel(20);
 						leave(pla, "leave");
 						Server.getInstance().broadcastMessage("§eSkyWars> " + pla.getDisplayName() + " §awon the game on arena §b" + this.arenaname + "");
-						//new MoneyRewardAction(pla);
+						new MoneyRewardAction(pla);
 						Server.getInstance().unloadLevel(Server.getInstance().getLevelByName(worldname));
 						worldmanager.restartArena(worldname);
 						Server.getInstance().loadLevel(worldname);

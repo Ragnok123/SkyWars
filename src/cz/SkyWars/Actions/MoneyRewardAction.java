@@ -2,6 +2,7 @@ package cz.SkyWars.Actions;
 
 import cn.nukkit.Player;
 import cn.nukkit.Server;
+import cn.nukkit.plugin.Plugin;
 import cz.SkyWars.SkyWars;
 import cz.SkyWars.API.PlayerEconomyRewardEvent;
 
@@ -18,7 +19,12 @@ public class MoneyRewardAction {
 	
 	public void handle() {
 		if((boolean) SkyWars.getInstance().settingsc.get("economyapi-enabled") == true) {
-			me.onebone.economyapi.EconomyAPI.getInstance().addMoney(this.p, (double) this.coins);
+			Plugin eapi = Server.getInstance().getPluginManager().getPlugin("EconomyAPI");
+			if (eapi == null) {
+				Server.getInstance().getLogger().info("EconomyAPI not found. Please, if you want to run SkyWars with EconomyAPI, install it.");
+			} else {
+				me.onebone.economyapi.EconomyAPI.getInstance().addMoney(this.p, (double) this.coins);
+			}
 		}
 		if((boolean) SkyWars.getInstance().settingsc.get("customeconomy-enabled") == true) {
 			PlayerEconomyRewardEvent event = new PlayerEconomyRewardEvent(this.p, this.coins);
