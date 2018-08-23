@@ -13,12 +13,22 @@ public class Team
 	public Position teampos;
 	public int colorname;
 	public String teamname;
+	public Arena arena;
+	public int number;
 
 	public HashMap<String, Player> teammates = new HashMap<String, Player>();
 
-	public Team(Position teampos, int colorname, String teamname)
+	public String numToName(int num) {
+		String team = "";
+		return team;
+	}
+	
+	public Team(Arena arena, int number)
 	{
-		this.teampos = teampos;
+		this.arena = arena;
+		this.number = number;
+		this.teampos = this.arena.positions.get(this.number);
+		this.teamname = numToName(this.number);
 		
 	}
 

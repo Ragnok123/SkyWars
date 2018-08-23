@@ -67,7 +67,8 @@ public class SkyWars extends PluginBase implements Listener
 	public Config cplayers;
 	
 	public HashMap<Player, ArenaSettings> setup = new HashMap<Player, ArenaSettings>();
-	public HashMap<Player, Integer> step = new HashMap<Player, Integer>();
+	public HashMap<Player, Integer> stepSolo = new HashMap<Player, Integer>();
+	public HashMap<Player, Integer> stepTeam = new HashMap<Player, Integer>();
 	public static HashMap<String, SWPlayer> players = new HashMap<String, SWPlayer>();
 	HashMap<Player, Long> antiDupe = new HashMap<Player, Long>();
 
@@ -279,7 +280,7 @@ public class SkyWars extends PluginBase implements Listener
     	}
     	if(setup.containsKey(player)) {
     		ArenaSettings settings = setup.get(player);
-    		int currentStep = step.get(player);
+    		int currentStep = stepSolo.get(player);
     			if (currentStep == 0) {
     				if(block instanceof BlockSignPost || block instanceof BlockWallSign) {
             			player.sendMessage(LanguageManager.translate("arena_click", player, new String[0]));
@@ -301,9 +302,9 @@ public class SkyWars extends PluginBase implements Listener
     
     public void resetStep(Player player) {
     	ArenaSettings set = setup.get(player);
-    	int currentStep = step.get(player);
-    	step.remove(player);
-    	step.put(player, currentStep + 1);
+    	int currentStep = stepSolo.get(player);
+    	stepSolo.remove(player);
+    	stepSolo.put(player, currentStep + 1);
     }
     
     
@@ -319,16 +320,17 @@ public class SkyWars extends PluginBase implements Listener
     			if(args[0].equals("create")) {
     				String arenaname = (String) args[1];
     				ArenaSettings set = new ArenaSettings(arenaname, true);
+    				set.mode = "solo";
     				setup.put(player, set);
-    				step.put(player, 0);
+    				stepSolo.put(player, 0);
     				set.setSettings(5);
     				player.sendMessage(LanguageManager.translate("arena_sign", ((Player) sender), new String[0]));
     			}
     			if(args[0].equals("finish")) {
     				player.sendMessage(LanguageManager.translate("arena_finish", player, new String[0]));
     				ArenaSettings set = setup.get(player);
-    				set.setSlots(step.get(player) -1);
-    	    		step.remove(player);
+    				set.setSlots(stepSolo.get(player) -1);
+    	    		stepSolo.remove(player);
     	    		registerArena(set.getName(), new Arena(this, set.getName(), set));
     	    		setup.remove(player);
     			}

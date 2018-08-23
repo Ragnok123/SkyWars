@@ -52,10 +52,13 @@ public class Arena implements Listener
 	}
 
 	public SkyWars skywars;
+	public ArenaType type;
 	public ArenaWorldManager worldmanager;
 	public ArenaSettings settings;
 	public List<Position> positions = new ArrayList<Position>();
 	public int spawnIndex;
+	
+	public List<Team> teams = new ArrayList<Team>();
 	
 	public String arenaname;
 	public String worldname;
@@ -89,6 +92,7 @@ public class Arena implements Listener
         this.skywars = skywars;
         this.arenaname = arenaname;
         this.settings = settings;
+		this.type = this.settings.stringToType();
 		skywars.getLogger().info("arenaId: " + arenaname + "\ntime: " + settings.getTime() + "\nmaxPlayers: " + settings.getSlots());
 		this.waitTime = 60;
 		this.godTime = 0;

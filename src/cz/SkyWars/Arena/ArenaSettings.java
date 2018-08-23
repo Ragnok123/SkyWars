@@ -1,6 +1,7 @@
 package cz.SkyWars.Arena;
 
 import cz.SkyWars.SkyWars;
+import cz.SkyWars.Arena.Arena.ArenaType;
 import cn.nukkit.Server;
 import cn.nukkit.level.*;
 import cn.nukkit.block.Block;
@@ -24,9 +25,6 @@ public class ArenaSettings {
 		this.s = s;
 	}
 	
-	public String getMode() {
-		return this.mode;
-	}
 	
 	public String getName() {
 		return this.arena;
@@ -70,10 +68,34 @@ public class ArenaSettings {
 		SkyWars.getInstance().arenass.save();
 	}
 	
+	public ArenaType stringToType() {
+		ArenaType type = null;
+		try {
+			if(s == true) {
+				if(this.mode.equals("solo")) {
+					type = ArenaType.SOLO;
+				}
+			} else {
+				if(getMode().equals("solo")) {
+					type = ArenaType.SOLO;
+				}
+			}
+		} catch (NullPointerException e) {
+			System.out.println("Arena mode is null");
+		}
+		return type;
+	}
+	
+	public String getMode() {
+		 String mode = SkyWars.getInstance().arenass.getString(this.arena+".settings.mode");
+		 return mode;
+	}
+	
 	public void setSettings(int time) {
 		HashMap<String, Object> d1 = new HashMap<String, Object>();
 		d1.put("slots", -1);
 		d1.put("time", time);
+		d1.put("mode", this.mode);
 		SkyWars.getInstance().arenass.set(arena+".settings", d1);
 		SkyWars.getInstance().arenass.save();
 	}
@@ -81,6 +103,7 @@ public class ArenaSettings {
 	public void setSlots(int slots) {
 		SkyWars.getInstance().arenass.set(arena+".settings.slots", slots);
 		SkyWars.getInstance().arenass.set(arena+".settings.time", 5);
+		SkyWars.getInstance().arenass.set(arena+".settings.mode", this.mode);
 		SkyWars.getInstance().arenass.save();
 	}
 	
