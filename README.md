@@ -12,10 +12,11 @@ Before setup copy your skywars worlds to "arenas" folder
   4. When you will tap positions, just type /sw finish
   
 # ToDo:
-  1. Bug fixes
-  2. Team arena
-  3. Lucky Block mode
-  4. Make it better
+  1. Repair folder world system
+  2. Bug fixes
+  3. Team arena
+  4. Lucky Block mode
+  5. Make it better
 
 # API example:
 ```java
