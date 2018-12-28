@@ -13,6 +13,7 @@ public class StartupTask extends cn.nukkit.scheduler.Task{
 	
 	@Override
 	public void onRun(int tick) {
+		this.pl.loadWorlds();
 		this.pl.initializeArrays();
 	}
 	

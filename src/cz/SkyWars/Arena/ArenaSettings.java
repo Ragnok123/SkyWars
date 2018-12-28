@@ -1,7 +1,6 @@
 package cz.SkyWars.Arena;
 
 import cz.SkyWars.SkyWars;
-import cz.SkyWars.Arena.Arena.ArenaType;
 import cn.nukkit.Server;
 import cn.nukkit.level.*;
 import cn.nukkit.block.Block;
@@ -66,24 +65,6 @@ public class ArenaSettings {
 		d2.put("world", world);
 		SkyWars.getInstance().arenass.set(arena+".pos" + String.valueOf(position), d2);
 		SkyWars.getInstance().arenass.save();
-	}
-	
-	public ArenaType stringToType() {
-		ArenaType type = null;
-		try {
-			if(s == true) {
-				if(this.mode.equals("solo")) {
-					type = ArenaType.SOLO;
-				}
-			} else {
-				if(getMode().equals("solo")) {
-					type = ArenaType.SOLO;
-				}
-			}
-		} catch (NullPointerException e) {
-			System.out.println("Arena mode is null");
-		}
-		return type;
 	}
 	
 	public String getMode() {

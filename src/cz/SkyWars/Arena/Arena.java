@@ -21,6 +21,7 @@ import cn.nukkit.item.Item;
 import cn.nukkit.level.Level;
 import cn.nukkit.level.Location;
 import cn.nukkit.level.Position;
+import cn.nukkit.level.format.FullChunk;
 import cn.nukkit.level.particle.LavaDripParticle;
 import cn.nukkit.level.particle.SmokeParticle;
 import cn.nukkit.nbt.tag.CompoundTag;
@@ -39,20 +40,13 @@ import cn.nukkit.network.protocol.ExplodePacket;
 import cn.nukkit.event.inventory.InventoryTransactionEvent;
 import cn.nukkit.entity.*;
 
+import java.io.IOException;
 import java.util.*;
 
 public class Arena implements Listener
 {
 
-	public enum ArenaType{
-		SOLO,
-		TEAM,
-		LUCKY,
-		LUCKY_TEAM;
-	}
-
 	public SkyWars skywars;
-	public ArenaType type;
 	public ArenaWorldManager worldmanager;
 	public ArenaSettings settings;
 	public List<Position> positions = new ArrayList<Position>();
@@ -92,7 +86,6 @@ public class Arena implements Listener
         this.skywars = skywars;
         this.arenaname = arenaname;
         this.settings = settings;
-		this.type = this.settings.stringToType();
 		skywars.getLogger().info("arenaId: " + arenaname + "\ntime: " + settings.getTime() + "\nmaxPlayers: " + settings.getSlots());
 		this.waitTime = 60;
 		this.godTime = 0;
@@ -106,13 +99,21 @@ public class Arena implements Listener
 		maxPlayerCount = settings.getSlots();
 
 		worldname = settings.getWorld();
-        worldmanager = new ArenaWorldManager(this);
-        worldmanager.restartArena(worldname);
-		Server.getInstance().loadLevel(worldname);
-		Server.getInstance().getLevelByName(worldname).setTime(6000);
-		Server.getInstance().getLevelByName(worldname).stopTime();
+        worldmanager = skywars.worldmanager;
+        reloadLevel();
 		initPositions();
 		Server.getInstance().getScheduler().scheduleRepeatingTask(new SoloArenaTimer(this, arenaname, worldname, signX, signY, signZ, maxPlayerCount), 20);
+	}
+	
+	public void reloadLevel() {
+		try {
+			worldmanager.restartArena(worldname);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		Server.getInstance().getLevelByName(worldname).setTime(6000);
+		Server.getInstance().getLevelByName(worldname).stopTime();
 	}
 	
 	public void initPositions() {
@@ -209,7 +210,7 @@ public class Arena implements Listener
 				}
 				i++;
 			}
-			if (arenaplayers.size() >= 2)
+			if (arenaplayers.size() >= 1)
 			{
 				this.gameStatus = 1;
 				this.lastTime = this.waitTime;
@@ -397,11 +398,7 @@ public class Arena implements Listener
 		
 			if (arenaplayers.size() == 0)
 			{
-				Server.getInstance().unloadLevel(Server.getInstance().getLevelByName(worldname));
-				worldmanager.restartArena(worldname);
-				Server.getInstance().loadLevel(worldname);
-				Server.getInstance().getLevelByName(worldname).setTime(6000);
-				Server.getInstance().getLevelByName(worldname).stopTime();
+				reloadLevel();
 				resetPositions();
 				this.gameStatus = 0;
 				this.lastTime = 0;
@@ -419,11 +416,7 @@ public class Arena implements Listener
 						leave(pla, "leave");
 						Server.getInstance().broadcastMessage("§eSkyWars> " + pla.getDisplayName() + " §awon the game on arena §b" + this.arenaname + "");
 						new MoneyRewardAction(pla);
-						Server.getInstance().unloadLevel(Server.getInstance().getLevelByName(worldname));
-						worldmanager.restartArena(worldname);
-						Server.getInstance().loadLevel(worldname);
-						Server.getInstance().getLevelByName(worldname).setTime(6000);
-						Server.getInstance().getLevelByName(worldname).stopTime();
+						reloadLevel();
 						resetPositions();
 					}
 					this.gameStatus = 0;
@@ -483,11 +476,7 @@ public class Arena implements Listener
 							pla.getFoodData().setLevel(20);
 							leave(pla, "leave");
 							Server.getInstance().broadcastMessage("§eSkyWars> §aNoone didnt won the game on arena §b" + this.arenaname + "");
-							Server.getInstance().unloadLevel(Server.getInstance().getLevelByName(worldname));
-							worldmanager.restartArena(worldname);
-							Server.getInstance().loadLevel(worldname);
-							Server.getInstance().getLevelByName(worldname).setTime(6000);
-							Server.getInstance().getLevelByName(worldname).stopTime();
+							reloadLevel();
 							this.gameStatus = 0;
 							this.lastTime = 0;	
 						}

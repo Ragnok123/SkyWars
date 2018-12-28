@@ -49,6 +49,7 @@ import cn.nukkit.potion.Effect;
 import cn.nukkit.utils.*;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -60,6 +61,7 @@ public class SkyWars extends PluginBase implements Listener
 	public Position lobbyXYZ;
 	public Position hologramXYZ;
 	public Database database;
+	public ArenaWorldManager worldmanager;
 
 	public HashMap<String, Arena> arenas = new HashMap<String, Arena>();
 	public Config settingsc;
@@ -85,7 +87,8 @@ public class SkyWars extends PluginBase implements Listener
 	{ 
 		instance = this;
 		getServer().getPluginManager().registerEvents(this, this);
-		
+		worldmanager = new ArenaWorldManager();
+		loadWorlds();
 		new File(getServer().getDataPath() + "arenas/").mkdirs();
 		
 		File settingsFile = new File(getDataFolder() + "/settings.yml");
@@ -106,6 +109,12 @@ public class SkyWars extends PluginBase implements Listener
 			settingsc.set("hologramY", getServer().getDefaultLevel().getSafeSpawn().getY() + 1.5);
 			settingsc.set("hologramZ", getServer().getDefaultLevel().getSafeSpawn().getZ());
 			settingsc.set("hologramWorld", getServer().getDefaultLevel().getName());
+			settingsc.set("scoreboard-enabled", true);
+			
+			settingsc.set("scoreboard_title", "§l§eSKYWARS");
+			settingsc.set("scoreboard_kills", "§l§aKills:     ");
+			settingsc.set("scoreboard_deaths", "§l§aDeaths:     ");
+			settingsc.set("scoreboard_wins", "§l§aWins:     ");
 			
 			settingsc.set("reward-amount", 100);
 			settingsc.set("mysql.url", "");
@@ -156,7 +165,20 @@ public class SkyWars extends PluginBase implements Listener
 		getServer().getScheduler().scheduleDelayedTask(new StartupTask(this), 20);
 	}	
 	
-    
+	public void loadWorlds() {
+        String[] ws = new File(this.getDataFolder() + "/worlds/").list();
+        if (ws == null) return;
+        for (String w : ws) {
+            if (new File(this.getDataFolder() + "/worlds/" + w).isFile()) continue;
+            try {
+				worldmanager.restartArena(w);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        }
+    }
+	
     public void initializeArrays()
     {
     	if (arenass.getKeys() != null) {
@@ -284,13 +306,13 @@ public class SkyWars extends PluginBase implements Listener
     			if (currentStep == 0) {
     				if(block instanceof BlockSignPost || block instanceof BlockWallSign) {
             			player.sendMessage(LanguageManager.translate("arena_click", player, new String[0]));
-            			settings.setSign(block, block.x, block.y, block.z, block.getLevel().getName());
+            			settings.setSign(block, block.x, block.y, block.z, block.getLevel().getFolderName());
             			settings.fakeBlock = block;
             			settings.fakeLevel1 = player.getLevel().getName();
             			resetStep(player);
             		}
 				} else if (currentStep > 0) {
-					settings.setPositions(currentStep, block.x, block.y, block.z, block.getLevel().getName());
+					settings.setPositions(currentStep, block.x, block.y, block.z, block.getLevel().getFolderName());
 	        		player.sendMessage(LanguageManager.translate("arena_click", player, new String[0]));
 	        		settings.f(block.getLevel().getName());
 	        		settings.positions.add(new Position(block.x, block.y + 1, block.z, block.getLevel()));
@@ -315,29 +337,44 @@ public class SkyWars extends PluginBase implements Listener
     	switch(command.getName()) 
     	{
     	case "sw":
-    		if(((Player) sender).isOp())
-    		{
-    			if(args[0].equals("create")) {
-    				String arenaname = (String) args[1];
-    				ArenaSettings set = new ArenaSettings(arenaname, true);
-    				set.mode = "solo";
-    				setup.put(player, set);
-    				stepSolo.put(player, 0);
-    				set.setSettings(5);
-    				player.sendMessage(LanguageManager.translate("arena_sign", ((Player) sender), new String[0]));
-    			}
-    			if(args[0].equals("finish")) {
-    				player.sendMessage(LanguageManager.translate("arena_finish", player, new String[0]));
-    				ArenaSettings set = setup.get(player);
-    				set.setSlots(stepSolo.get(player) -1);
-    	    		stepSolo.remove(player);
-    	    		registerArena(set.getName(), new Arena(this, set.getName(), set));
-    	    		setup.remove(player);
-    			}
+    		if(sender instanceof ConsoleCommandSender) {
+    			getLogger().error("[SkyWars] Commands are not accessable from console");
     		} else {
-    			((Player) sender).sendMessage(LanguageManager.translate("perms", ((Player) sender), new String[0]));
+    			if(((Player) sender).isOp())
+        		{
+    				if(args.length == 0) {
+    					player.sendMessage(LanguageManager.translate("cmd", player, new String[0]));
+    				} else {
+    					if(args[0].equals("help")) {
+    						player.sendMessage("§l§e---===[SkyWars help]===---");
+    						player.sendMessage("§l§e- §a/sw create <arena_name> §7- Creates new arena");
+    						player.sendMessage("§l§e- §a/sw finish §7- Finishes setup");
+    					}
+    					if(args[0].equals("create")) {
+            				String arenaname = (String) args[1];
+            				ArenaSettings set = new ArenaSettings(arenaname, true);
+            				setup.put(player, set);
+            				stepSolo.put(player, 0);
+            				set.setSettings(5);
+            				player.sendMessage(LanguageManager.translate("arena_sign", ((Player) sender), new String[0]));
+            			}
+            			if(args[0].equals("finish")) {
+            				player.sendMessage(LanguageManager.translate("arena_finish", player, new String[0]));
+            				ArenaSettings set = setup.get(player);
+            				set.setSlots(stepSolo.get(player) -1);
+            	    		stepSolo.remove(player);
+            	    		worldmanager.copyWorld(player.getLevel().getFolderName(), "/worlds/", "/arenas/");
+            	    		registerArena(set.getName(), new Arena(this, set.getName(), set));
+            	    		setup.remove(player);
+            			}
+    				}
+        			
+        		} else {
+        			((Player) sender).sendMessage(LanguageManager.translate("perms", ((Player) sender), new String[0]));
+        		}
+        			
     		}
-    			
+    		
     		break;
     	}
     	return false;

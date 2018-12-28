@@ -20,6 +20,8 @@ public class LanguageManager{
 			 englishMsg.put("teleport", "&eSkyWars> &aTeleporting xou to wait lobby");
 			 englishMsg.put("error", "&eSkyWars> &cUnknow error");
 			 
+			 englishMsg.put("cmd", "&eSkyWars> &cUse &b/sw help");
+			 
 			 englishMsg.put("arena_setup", "&eSkyWars> &aYou're setting arena §f%0");
 			 englishMsg.put("arena_sign", "&eSkyWars> &aTap on sign");
 			 englishMsg.put("arena_click", "&eSkyWars> &aOk, now click for position");
