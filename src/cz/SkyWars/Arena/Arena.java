@@ -210,7 +210,7 @@ public class Arena implements Listener
 				}
 				i++;
 			}
-			if (arenaplayers.size() >= 1)
+			if (arenaplayers.size() >= 2)
 			{
 				this.gameStatus = 1;
 				this.lastTime = this.waitTime;
