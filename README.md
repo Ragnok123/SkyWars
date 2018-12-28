@@ -1,9 +1,7 @@
 # SkyWars
 SkyWars plugin for Nukkit
-Current version: 0.1 beta 
+Current version: 0.5 beta 
 
-# WARNING:
-Before setup copy your skywars worlds to "arenas" folder
 
 # Setup:
   1. Type /sw create <arena_name> 
