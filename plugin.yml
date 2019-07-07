@@ -1,6 +1,6 @@
 name: "SkyWars"
 main: cz.SkyWars.SkyWars
-version: "0.5 beta"
+version: "1.0 alpha"
 api: ["1.0.0"]
 author: "Ragnok123"
 load: POSTWORLD

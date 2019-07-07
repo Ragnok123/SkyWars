@@ -13,10 +13,8 @@ import java.util.Map;
 
 public class ArenaWorldManager{
 
-   public Arena arena;
 
     public ArenaWorldManager(){
-//        this.arena = arena;
    }
 	
     public void restartArena(String worldname) throws IOException {

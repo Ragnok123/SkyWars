@@ -26,6 +26,9 @@ public class LanguageManager{
 			 englishMsg.put("arena_sign", "&eSkyWars> &aTap on sign");
 			 englishMsg.put("arena_click", "&eSkyWars> &aOk, now click for position");
 			 englishMsg.put("arena_finish", "&eSkyWars> &aYou've finished setup");
+			 
+			 englishMsg.put("npc_spawned", "&eSkyWars> &aKit NPC spawned");
+			 englishMsg.put("buy_kit", "&eSkyWars> &aYo're trying buy kit %0 for &b%1 &amoney\n&eDo you want to buy?\n&eType &ayes &eto buy\n&eType &cno &ato cancel buying");
 
              englishMsg.put("sw_solo_menu_open", "&eSkyWars> &aYou have opened kit menu");
              englishMsg.put("sw_solo_menu_close", "&eSkyWars> &aYou have closed kit menu");

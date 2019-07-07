@@ -4,6 +4,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="C:/Users/gebab/Desktop/Nukkit/nukkit-1.0-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="lib/commons-io-2.6.jar"/>
-	<classpathentry kind="lib" path="C:/Users/gebab/Desktop/SkyWars/lib/EconomyAPI-1.0.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/gebab/Desktop/WallServer/SkyWars/lib/EconomyAPI-1.0.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

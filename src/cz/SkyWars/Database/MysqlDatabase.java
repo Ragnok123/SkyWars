@@ -38,9 +38,18 @@ public class MysqlDatabase implements Database{
 	public void addDeaths(String username, int kills){
        skywars.mysql.updateData("UPDATE `skywars_stats` SET `deaths` = `deaths` + '" + kills + "' WHERE `nickname` = '" + username + "'");
     }
+	
+	public void buyKit(String username, String kit) {
+		skywars.mysql.updateData("UPDATE `skywars_kits` SET `"+kit+"` = 'true' WHERE `nickname` = '"+username+"'");
+	}
+	
+	public boolean hasKit(String username, String kit) {
+		return (boolean) skywars.mysql.getPlayerKitData(username).get(kit);
+	}
 
 	public void createDataStats(String username){
          skywars.mysql.updateData("INSERT INTO `skywars_stats` (`nickname`, `kills`, `deaths`, `wins`) VALUES ('" + username + "', '0', '0', '0')");
+         skywars.mysql.updateData("INSERT INTO `skywars_kits` (`nickname`, `builder`,`soldier`) VALUES ('" + username + "', 'false', 'false')");
     }
 
 }

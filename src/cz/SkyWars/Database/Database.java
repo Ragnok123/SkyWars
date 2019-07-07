@@ -19,6 +19,10 @@ public interface Database {
 	int getDeaths(String username);
 
 	void addDeaths(String username, int kills);
+	
+	void buyKit(String username, String kit);
+	
+	boolean hasKit(String username,String kit);
 
   	void createDataStats(String username);
   	

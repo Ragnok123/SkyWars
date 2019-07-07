@@ -42,11 +42,22 @@ public class YamlDatabase implements Database{
 		skywars.cplayers.set(username+".stats.deaths", getDeaths(username) +deaths);
 		skywars.cplayers.save();
     }
+	
+	public void buyKit(String username, String kit) {
+		skywars.cplayers.set(username+".kits."+kit, true);
+		skywars.cplayers.save();
+	}
+	
+	public boolean hasKit(String username, String kit) {
+		return skywars.cplayers.getBoolean(username+".kits."+kit);
+	}
 
 	public void createDataStats(String username){
 		skywars.cplayers.set(username+".stats.kills", 0);
 		skywars.cplayers.set(username+".stats.wins", 0);
 		skywars.cplayers.set(username+".stats.deaths", 0);
+		skywars.cplayers.set(username+".kits.builder", false);
+		skywars.cplayers.set(username+".kits.soldier", false);
 		skywars.cplayers.save();
 	}
 

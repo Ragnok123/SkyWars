@@ -377,6 +377,9 @@ public class Arena implements Listener
 							ingame.sendTitle("§bGame started");
 							ingame.getInventory().clearAll();
 							ingame.setImmobile(false);
+							if(SkyWars.getPlayer(ingame).getKit() != null){
+								SkyWars.getPlayer(ingame).giveKit();
+							}
 						}
 					}
 					break;
@@ -526,11 +529,22 @@ public class Arena implements Listener
     public void join(Player player) {
     	arenaplayers.put(player.getName(), player);
     	SkyWars.getPlayer(player).setInLobby(false);
+    	SkyWars.getPlayer(player).setArena(this);
     	Player ingame = player;
 		ingame.setGamemode(0);
 		ingame.getInventory().clearAll();
 		ingame.setHealth(20);
 		ingame.getFoodData().setLevel(20);
+		if(SkyWars.getPlayer(player).hasKit("builder")) {
+			Item build = Item.get(Item.COBBLESTONE,0,1);
+			build.setCustomName("§l§eBuilder Kit");
+			player.getInventory().setItem(0,build);
+		}
+		if(SkyWars.getPlayer(player).hasKit("soldier")) {
+			Item build = Item.get(Item.WOODEN_SWORD,0,1);
+			build.setCustomName("§l§eSoldier Kit");
+			player.getInventory().setItem(1,build);
+		}
 		Item clock = Item.get(Item.CLOCK);
 		clock.setCustomName("§eBack to lobby");
 		ingame.getInventory().setItem(4, clock);
@@ -538,6 +552,8 @@ public class Arena implements Listener
     
     public void leave(Player player, String cause) {
     	SWPlayer data = SkyWars.getPlayer(player);
+    	data.setArena(null);
+    	data.unsetKit();
     	if(cause == "void") {
     		arenaplayers.remove(player.getName());
     		data.setInLobby(true);
@@ -582,159 +598,6 @@ public class Arena implements Listener
 			}
     	}
     }
-
-    @EventHandler
-    public void handleInteractForJoiningToArena(PlayerInteractEvent event)
-	{
-		Player player = event.getPlayer();
-		Block block = event.getBlock();
-		if (block.getX() == this.signX && block.getY() == this.signY && block.getZ() == this.signZ)
-		{
-			if(gameStatus > 2) {
-				player.sendMessage(LanguageManager.translate("sw_solo_running", player, new String[0]));
-			}
-			else if(arenaplayers.size() >= maxPlayerCount) {
-				player.sendMessage(LanguageManager.translate("sw_solo_full", player, new String[0]));
-			} else {
-				join(player);	
-				for(Player p : arenaplayers.values()) {
-					if(game(p)) {
-						p.sendMessage(LanguageManager.translate("sw_solo_all_join", player, player.getName()));
-					}
-				}
-			}
-		}
-    }
-
-	@EventHandler
-	public void handleLuckyBlockBreak(BlockBreakEvent event)
-	{
-		Player player = event.getPlayer();
-		Block block = event.getBlock();
-		if(this.gameStatus < 2){ 
-			if(player.getLevel() == Server.getInstance().getLevelByName(this.worldname) && game(player))
-			{
-				event.setCancelled();
-			}
-		}
-	}
-
-    @EventHandler
-    public void handleAntiMove(PlayerMoveEvent event)
-	{
-		Player player = event.getPlayer();
-		if (arenaplayers.containsKey(player.getName()))
-		{
-			if (this.gameStatus > 2)
-			{
-				if (player.getY() < 0)
-				{
-					SkyWars.getPlayer(player).addDeath();
-					leave(player, "void");
-				}
-            }
-        }
-    }
-
-    @EventHandler
-    public void handlePlayerQuit(PlayerQuitEvent event)
-	{
-        Player player = event.getPlayer();
-        if (arenaplayers.containsKey(player.getName()))
-		{
-        	leave(player, "leave");
-        }
-    }
-    
-    @EventHandler
-    public void handleDamage(EntityDamageEvent event)
-    {
-    	Player player = (Player) event.getEntity();
-    	if(this.gameStatus < 2)
-    	{
-    		if(player.getLevel() == Server.getInstance().getLevelByName(this.worldname))
-    		{
-    			event.setCancelled();
-    		}
-    	}
-    }
-
-	@EventHandler
-    public void handleDamageEvent(EntityDamageEvent event)
-	{
-        Player playerEntity = (Player) event.getEntity();
-        if (event instanceof EntityDamageByEntityEvent)
-		{
-            Entity damager = ((EntityDamageByEntityEvent) event).getDamager();
-            Player hitnutyHrac = (Player) event.getEntity();
-            Player player = (Player) damager;
-            if (player instanceof Player && hitnutyHrac instanceof Player)
-            {
-            	if ((hitnutyHrac.getHealth() - event.getDamage()) < 1)
-            	{
-            		if(!arenaplayers.isEmpty()) {
-                		for (Player ingame : arenaplayers.values())
-                		{
-                			if(game(player) && game(ingame) && game(hitnutyHrac)) {
-                				SkyWars.getPlayer(player).addKill();
-                				SkyWars.getPlayer(hitnutyHrac).addDeath();
-            					ingame.sendMessage(LanguageManager.translate("sw_solo_all_death_cause_kill", ingame, hitnutyHrac.getName(), player.getName()));
-            					leave(hitnutyHrac, "kill");
-                			}
-                		}
-            		}
-            	} 
-            }
-		}
-	} 
-
-
-    @EventHandler
-    public void onDeath(PlayerDeathEvent event)
-	{
-        Entity entity = event.getEntity();
-        Player player = (Player) entity;
-        if (arenaplayers.containsKey(player.getName()))
-		{
-			event.setDeathMessage("");
-			event.setDrops(new Item[0]);
-        }
-    }
-    
-    
-
-
-	@EventHandler
-    public void kitSelect(PlayerInteractEvent event)
-	{
-		Player player = event.getPlayer();
-		Item item = event.getItem();
-		Block block = event.getBlock();
-		if (arenaplayers.containsKey(player.getName()))
-		{
-			if(item.getCustomName().equals("§eBack to lobby"))
-			{
-				event.setCancelled();
-				leave(player, "leave");
-			}
-			if(block.getId() == Block.CHEST) {
-				if(this.gameStatus < 2) {
-					event.setCancelled();
-				}
-			}
-		}
-    }
-	
-	
-	@EventHandler
-	public void handleDrop(PlayerDropItemEvent event) {
-		Player player = event.getPlayer();
-		if(game(player)) {
-			if(gameStatus < 2) {
-				event.setCancelled();
-			}
-		}
-	}
 
 
 }

@@ -67,6 +67,7 @@ public class MySQL
 	
 	public void init() {
 		updateData("CREATE TABLE IF NOT EXISTS `skywars_stats` (`nickname` varchar(50) NOT NULL default '', `kills` int(11) NOT NULL default '0', `deaths` int(11) NOT NULL default '0', `wins` int(11) NOT NULL default '0')");
+		updateData("CREATE TABLE IF NOT EXISTS `skywars_kits` (`nickname` varchar(50) NOT NULL default '', `builder` varchar(50) NOT NULL default 'false', `soldier` varchar(50) NOT NULL default 'false'");
 	}
 
 
