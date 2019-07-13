@@ -107,8 +107,8 @@ public class ArenaListener implements Listener {
 	{
         if (event instanceof EntityDamageByEntityEvent)
 		{
-            Entity damager = ((EntityDamageByEntityEvent) event).getDamager();
-            if(event.getEntity() instanceof Player && damager instanceof Player) {
+            if(event.getEntity() instanceof Player && ((EntityDamageByEntityEvent) event).getDamager() instanceof Player) {
+                Entity damager = ((EntityDamageByEntityEvent) event).getDamager();
             	Player hitnutyHrac = (Player) event.getEntity();
             	Player player = (Player) damager;
             	SWPlayer data = SkyWars.getPlayer(player);
