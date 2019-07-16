@@ -223,6 +223,10 @@ public class Arena implements Listener
 		if (this.gameStatus == 1)
 		{
 			this.lastTime--;
+			if(arenaplayers.size() < 2) {
+				this.gameStatus = 0;
+				this.lastTime = 0;
+			} else {
 			int i = 0;
 			for(Player ingame : arenaplayers.values()) {
 				if(game(ingame)) {
@@ -383,6 +387,7 @@ public class Arena implements Listener
 						}
 					}
 					break;
+			}
 			}
 		}
 		if (this.gameStatus == 2)
