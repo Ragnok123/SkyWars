@@ -10,6 +10,7 @@ import cz.SkyWars.MySQL;
 import cz.SkyWars.Actions.*;
 import cz.SkyWars.JoinTask;
 import cz.SkyWars.Database.*;
+import cz.SkyWars.Economy.*;
 import cz.SkyWars.Kits.KitManager;
 import cn.nukkit.Player;
 import cn.nukkit.Server;
@@ -64,6 +65,7 @@ public class SkyWars extends PluginBase implements Listener
 	public Position lobbyXYZ;
 	public Position hologramXYZ;
 	public Database database;
+	public Economy economy;
 	public ArenaWorldManager worldmanager;
 	public KitManager kitMgr;
 
@@ -153,6 +155,15 @@ public class SkyWars extends PluginBase implements Listener
 			getServer().getPluginManager().disablePlugin(this);
 		}
 		
+		if((boolean)settingsc.get("economyapi-enabled") == true && (boolean)settingsc.get("customeconomy-enabled") == false) {
+			Plugin eapi = Server.getInstance().getPluginManager().getPlugin("EconomyAPI");
+			if (eapi == null) {
+				Server.getInstance().getLogger().info("EconomyAPI not found. Please, if you want to run SkyWars with EconomyAPI, install it.");
+			} else {
+				this.economy = new EconomyEconomyAPI(this);
+			}
+		}
+		
 		arenass = new Config(getDataFolder() + "/arenas.yml", Config.YAML);
 		cplayers = new Config(getDataFolder() + "/players.yml", Config.YAML);
 		/* Positions */
@@ -181,6 +192,10 @@ public class SkyWars extends PluginBase implements Listener
 			}
         }
     }
+	
+	public void setEconomyHandler(Economy economy) {
+		this.economy = economy;
+	}
 	
     public void initializeArrays()
     {

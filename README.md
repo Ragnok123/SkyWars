@@ -18,12 +18,21 @@ New added: kits!
   4. Make it better
 
 # API example:
-```java
+Create custom class 
 
-@EventHandler
-public void handleMoney(PlayerEconomyRewardEvent event){
-  Player player = event.getPlayer();
-  int money = event.getMoney();
-  yourMoneyPlugin.addMoney(player, money);
-}
+```java
+public class MyEconomy extends CustomEconomy{
+	public MyEconomy(SkyWars sw){ super(sw) }
+	public void addMoney(Player p, int money){
+		myPlugin.addMoney(p,money);
+	}
+	public int getMoney(Player p){
+		return myPlugin.getMoney(p);
+	}
+
+```
+and than, simple with 
+
+```
+SkyWars.getInstance().setEconomyHandler(myEconomy);
 ```

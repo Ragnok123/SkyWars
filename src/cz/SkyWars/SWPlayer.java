@@ -61,27 +61,11 @@ public class SWPlayer {
 	}
 	
 	public int getMoney() {
-		int money = 0;
-		if((boolean) SkyWars.getInstance().settingsc.get("economyapi-enabled") == true) {
-			Plugin eapi = Server.getInstance().getPluginManager().getPlugin("EconomyAPI");
-			if (eapi == null) {
-				Server.getInstance().getLogger().info("EconomyAPI not found. Please, if you want to run SkyWars with EconomyAPI, install it.");
-			} else {
-				money = (int) me.onebone.economyapi.EconomyAPI.getInstance().myMoney(this.player);
-			}
-		}
-		return money;
+		return SkyWars.getInstance().economy.getMoney(this.player);
 	}
 	
 	public void addMoney(int money) {
-		if((boolean) SkyWars.getInstance().settingsc.get("economyapi-enabled") == true) {
-			Plugin eapi = Server.getInstance().getPluginManager().getPlugin("EconomyAPI");
-			if (eapi == null) {
-				Server.getInstance().getLogger().info("EconomyAPI not found. Please, if you want to run SkyWars with EconomyAPI, install it.");
-			} else {
-				me.onebone.economyapi.EconomyAPI.getInstance().addMoney(this.player, money);
-			}
-		}
+		SkyWars.getInstance().economy.addMoney(this.player,money);
 	}
 	
 	public boolean isInLobby() {

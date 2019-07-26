@@ -18,7 +18,7 @@ public class MoneyRewardAction {
 	}
 	
 	public void handle() {
-		if((boolean) SkyWars.getInstance().settingsc.get("economyapi-enabled") == true) {
+		/*if((boolean) SkyWars.getInstance().settingsc.get("economyapi-enabled") == true) {
 			Plugin eapi = Server.getInstance().getPluginManager().getPlugin("EconomyAPI");
 			if (eapi == null) {
 				Server.getInstance().getLogger().info("EconomyAPI not found. Please, if you want to run SkyWars with EconomyAPI, install it.");
@@ -29,7 +29,10 @@ public class MoneyRewardAction {
 		if((boolean) SkyWars.getInstance().settingsc.get("customeconomy-enabled") == true) {
 			PlayerEconomyRewardEvent event = new PlayerEconomyRewardEvent(this.p, this.coins);
 			Server.getInstance().getPluginManager().callEvent(event);
-		}
+		}*/
+		SkyWars.getInstance().economy.addMoney(this.p,this.coins);
+		PlayerEconomyRewardEvent event = new PlayerEconomyRewardEvent(this.p, this.coins);
+		Server.getInstance().getPluginManager().callEvent(event);
 	}
 
 }
