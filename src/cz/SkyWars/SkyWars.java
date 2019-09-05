@@ -447,7 +447,7 @@ public class SkyWars extends PluginBase implements Listener
     		if(sender instanceof ConsoleCommandSender) {
     			getLogger().error("[SkyWars] Commands are not accessable from console");
     		} else {
-    			if(((Player) sender).isOp())
+    			if(player.hasPermission("skywars.command"))
         		{
     				if(args.length == 0) {
     					player.sendMessage(LanguageManager.translate("cmd", player, new String[0]));
@@ -461,13 +461,21 @@ public class SkyWars extends PluginBase implements Listener
     						npc.spawnToAll();
     						player.sendMessage(LanguageManager.translate("npc_spawned",player,new String[0]));
     					}
-    					if(args[0].equals("help")) {
+    					else if(args[0].equals("kits")) {
+    						if(args.length == 1) {
+    							player.sendMessage("§l§e---===[SkyWars kits help]===---");
+    							player.sendMessage("§l§e- §a/sw kits add <kit_id> §7- Creates new kit");
+        						player.sendMessage("§l§e- §a/sw kits modify <kit_id> §7- Modifies existing kit");
+        						player.sendMessage("§l§e- §a/sw kits remove <kit_id> §7- Deletes");
+    						}
+    					}
+    					else if(args[0].equals("help")) {
     						player.sendMessage("§l§e---===[SkyWars help]===---");
     						player.sendMessage("§l§e- §a/sw create <arena_name> §7- Creates new arena");
     						player.sendMessage("§l§e- §a/sw finish §7- Finishes setup");
-    						player.sendMessage("§l§e- §a/sw npc <builder|soldier> §7- Creates kit NPC");
+    						player.sendMessage("§l§e- §a/sw npc <spawn|delete> <builder|soldier|{custom kit id}> §7- Creates/Deletes kit NPC");
     					}
-    					if(args[0].equals("create")) {
+    					else if(args[0].equals("create")) {
             				String arenaname = (String) args[1];
             				ArenaSettings set = new ArenaSettings(arenaname, true);
             				setup.put(player, set);
@@ -475,7 +483,7 @@ public class SkyWars extends PluginBase implements Listener
             				set.setSettings(5);
             				player.sendMessage(LanguageManager.translate("arena_sign", ((Player) sender), new String[0]));
             			}
-            			if(args[0].equals("finish")) {
+    					else if(args[0].equals("finish")) {
             				player.sendMessage(LanguageManager.translate("arena_finish", player, new String[0]));
             				ArenaSettings set = setup.get(player);
             				set.setSlots(stepSolo.get(player) -1);

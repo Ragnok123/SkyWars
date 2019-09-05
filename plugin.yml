@@ -7,3 +7,10 @@ load: POSTWORLD
 commands:
  sw:
   description: "sw command"
+  permission: skywars.command
+  default: "op"
+  aliases: ["skywars"]
+permissions:
+ skywars.command:
+  description: "Allows player to use /sw command"
+  default: op
