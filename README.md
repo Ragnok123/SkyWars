@@ -1,9 +1,6 @@
 # SkyWars
 SkyWars plugin for Nukkit
-Current version: 1.0 alpha
-
-New added: kits!
-
+Current version: 1.0.9 alpha pre 1.1
 
 # Setup:
   1. Type /sw create <arena_name> 
@@ -18,7 +15,7 @@ New added: kits!
   4. Make it better
 
 # API example:
-Create custom class 
+Create custom class of ecomony handler
 
 ```java
 public class MyEconomy extends CustomEconomy{
