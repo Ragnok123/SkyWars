@@ -421,13 +421,12 @@ public class SkyWars extends PluginBase implements Listener
 		        		.add(new FloatTag("", (float) pos.getYaw()))
 		        		.add(new FloatTag("", (float) pos.getPitch())))
 		        .putString("KitId", kit.toLowerCase())
-				.putCompound("Skin", new CompoundTag()
-	                    .putString("ModelId", pos.getSkin().getGeometryName())
-	                    .putByteArray("Data", pos.getSkin().getSkinData())
-	                    .putString("ModelId", pos.getSkin().getSkinId())
-	                    .putByteArray("CapeData", pos.getSkin().getCapeData())
-	                    .putString("GeometryName", pos.getSkin().getGeometryName())
-	                    .putByteArray("GeometryData", pos.getSkin().getGeometryData().getBytes(StandardCharsets.UTF_8)))
+				.putCompound("Skin",
+						new CompoundTag()
+								.putByteArray("Data", pos.getSkin().getSkinData().data)
+								.putString("ModelId",UUID.randomUUID().toString())
+								.putString("GeometryName", "geometry.humanoid.custom")
+								.putByteArray("GeometryData",pos.getSkin().getGeometryData().getBytes(StandardCharsets.UTF_8)))
 				.putBoolean("Sneak", pos.isSneaking());
 		return nbt;
 	}

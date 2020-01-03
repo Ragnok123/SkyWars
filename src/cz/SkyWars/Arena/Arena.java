@@ -36,7 +36,6 @@ import cn.nukkit.event.block.BlockBreakEvent;
 import cn.nukkit.event.Listener;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.math.AxisAlignedBB;
-import cn.nukkit.network.protocol.ExplodePacket;
 import cn.nukkit.event.inventory.InventoryTransactionEvent;
 import cn.nukkit.entity.*;
 
