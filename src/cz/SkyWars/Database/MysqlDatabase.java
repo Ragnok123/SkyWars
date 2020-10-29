@@ -1,6 +1,8 @@
 package cz.SkyWars.Database;
 
+import cz.SkyWars.SWPlayer;
 import cz.SkyWars.SkyWars;
+import ru.ragnok123.sqlNukkitLib.utils.Pair;
 
 public class MysqlDatabase implements Database{
 	
@@ -11,45 +13,33 @@ public class MysqlDatabase implements Database{
 	}
 
 	@Override
-	public boolean checkAccStats(String username){
-        return !skywars.mysql.getPlayerStatsData(username).isEmpty();
-     }
-
-	public int getKills(String username){
-      return (int) skywars.mysql.getPlayerStatsData(username).get("kills");
-    }
-
-	public void addKills(String username, int kills){
-       skywars.mysql.updateData("UPDATE `skywars_stats` SET `kills` = `kills` + '" + kills + "' WHERE `nickname` = '" + username + "'");
-    }
-
-	public int getWins(String username){
-      return (int) skywars.mysql.getPlayerStatsData(username).get("wins");
-    }
-
-	public void addWins(String username, int wins){
-       skywars.mysql.updateData("UPDATE `skywars_stats` SET `wins` = `wins` + '" + wins + "' WHERE `nickname` = '" + username + "'");
-    }
-
-	public int getDeaths(String username){
-      return (int) skywars.mysql.getPlayerStatsData(username).get("deaths");
-    }
-
-	public void addDeaths(String username, int kills){
-       skywars.mysql.updateData("UPDATE `skywars_stats` SET `deaths` = `deaths` + '" + kills + "' WHERE `nickname` = '" + username + "'");
-    }
-	
-	public void buyKit(String username, String kit) {
-		skywars.mysql.updateData("UPDATE `skywars_kits` SET `"+kit+"` = 'true' WHERE `nickname` = '"+username+"'");
-	}
-	
-	public boolean hasKit(String username, String kit) {
-		return (boolean) skywars.mysql.getPlayerKitData(username).get(kit);
+	public void loadData(SWPlayer data) {
+		String username = data.getPlayer().getName().toLowerCase();
+		skywars.mysql.select("skywars_stats", "nickname", username, map -> {
+			if(!map.isEmpty()) {
+				data.kills = (int)map.get("kills");
+				data.deaths = (int)map.get("deaths");
+				data.wins = (int)map.get("wins");
+			} else {
+				skywars.mysql.insert("skywars", new Pair[] {
+						new Pair("nickname", username),
+						new Pair("kills",0),
+						new Pair("deaths",0),
+						new Pair("wins",0)
+				});
+			}
+		});
+		
 	}
 
-	public void createDataStats(String username){
-         skywars.mysql.updateData("INSERT INTO `skywars_stats` (`nickname`, `kills`, `deaths`, `wins`) VALUES ('" + username + "', '0', '0', '0')");
-         skywars.mysql.updateData("INSERT INTO `skywars_kits` (`nickname`, `builder`,`soldier`) VALUES ('" + username + "', 'false', 'false')");
-    }
+	@Override
+	public void saveData(SWPlayer data) {
+		String username = data.getPlayer().getName().toLowerCase();
+		skywars.mysql.update("skywars_stats", "nickname", username, new Pair[] {
+				new Pair("kills", data.kills),
+				new Pair("deaths", data.deaths),
+				new Pair("wins", data.wins)
+		});
+	}
 
 }
