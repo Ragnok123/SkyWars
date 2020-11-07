@@ -6,12 +6,9 @@ import cz.SkyWars.Arena.ArenaSettings;
 import cz.SkyWars.Manager.*;
 import cz.SkyWars.Manager.WorldManager.*;
 import cz.SkyWars.entity.KitNPC;
-import cz.SkyWars.MySQL;
 import cz.SkyWars.Actions.*;
 import cz.SkyWars.JoinTask;
 import cz.SkyWars.Database.*;
-import cz.SkyWars.Economy.*;
-import cz.SkyWars.Kits.KitManager;
 import cn.nukkit.Player;
 import cn.nukkit.Server;
 import cn.nukkit.block.*;
@@ -50,6 +47,8 @@ import cn.nukkit.plugin.Plugin;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.potion.Effect;
 import cn.nukkit.utils.*;
+import ru.ragnok123.sqlNukkitLib.*;
+import ru.ragnok123.sqlNukkitLib.mysql.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -61,13 +60,11 @@ public class SkyWars extends PluginBase implements Listener
 {
 
 	public static SkyWars instance;
-	public MySQL mysql;
+	public MySQLDatabase mysql;
 	public Position lobbyXYZ;
 	public Position hologramXYZ;
-	public Database database;
-	public Economy economy;
+	public cz.SkyWars.Database.Database database;
 	public ArenaWorldManager worldmanager;
-	public KitManager kitMgr;
 
 	public HashMap<String, Arena> arenas = new HashMap<String, Arena>();
 	public Config settingsc;
@@ -78,7 +75,6 @@ public class SkyWars extends PluginBase implements Listener
 	public HashMap<Player, Integer> stepSolo = new HashMap<Player, Integer>();
 	public HashMap<Player, Integer> stepTeam = new HashMap<Player, Integer>();
 	public static HashMap<String, SWPlayer> players = new HashMap<String, SWPlayer>();
-	HashMap<Player, Long> antiDupe = new HashMap<Player, Long>();
 
 	@Override
 	public void onLoad()
@@ -106,8 +102,6 @@ public class SkyWars extends PluginBase implements Listener
 			settingsc.set("lobbyWorld", getServer().getDefaultLevel().getName());
 			settingsc.set("dataProvider.yaml", true);
 			settingsc.set("dataProvider.mysql", false);
-			settingsc.set("economyapi-enabled", true);
-			settingsc.set("customeconomy-enabled", false);
 			settingsc.set("joinMessage-enabled", false);
 			settingsc.set("quitMessage-enabled", false);
 			settingsc.set("hologram-enabled", false);
@@ -140,9 +134,9 @@ public class SkyWars extends PluginBase implements Listener
 			String login = (String) settingsc.get("mysql.login");
 			String pass = (String) settingsc.get("mysql.password");
 			String db = (String) settingsc.get("mysql.database");
-			mysql = new MySQL(this, login, pass, db, host);
+			mysql = (MySQLDatabase) SQLLib.init(SQLType.MySQL, new MySQLConnectionInfo(host, login, pass, db));
 			mysql.connect();
-			mysql.init();
+			mysql.query("CREATE TABLE IF NOT EXISTS `skywars_stats` (`nickname` varchar(50) NOT NULL default '', `kills` int(11) NOT NULL default '0', `deaths` int(11) NOT NULL default '0', `wins` int(11) NOT NULL default '0')");
 		}
 		
 		if((boolean)settingsc.get("dataProvider.yaml") == false && (boolean)settingsc.get("dataProvider.mysql") == false) {
@@ -155,15 +149,6 @@ public class SkyWars extends PluginBase implements Listener
 			getServer().getPluginManager().disablePlugin(this);
 		}
 		
-		if((boolean)settingsc.get("economyapi-enabled") == true && (boolean)settingsc.get("customeconomy-enabled") == false) {
-			Plugin eapi = Server.getInstance().getPluginManager().getPlugin("EconomyAPI");
-			if (eapi == null) {
-				Server.getInstance().getLogger().info("EconomyAPI not found. Please, if you want to run SkyWars with EconomyAPI, install it.");
-			} else {
-				this.economy = new EconomyEconomyAPI(this);
-			}
-		}
-		
 		arenass = new Config(getDataFolder() + "/arenas.yml", Config.YAML);
 		cplayers = new Config(getDataFolder() + "/players.yml", Config.YAML);
 		/* Positions */
@@ -174,7 +159,6 @@ public class SkyWars extends PluginBase implements Listener
 		String world1 =  (String) settingsc.getString("hologramWorld") ;
 		hologramXYZ.setLevel(getServer().getLevelByName(world1));
 		Entity.registerEntity("KitNPC", KitNPC.class);
-		kitMgr = new KitManager(this);
 		Server.getInstance().getPluginManager().registerEvents(new ArenaListener(), this);
 		getServer().getScheduler().scheduleDelayedTask(new StartupTask(this), 20);
 	}	
@@ -192,10 +176,6 @@ public class SkyWars extends PluginBase implements Listener
 			}
         }
     }
-	
-	public void setEconomyHandler(Economy economy) {
-		this.economy = economy;
-	}
 	
     public void initializeArrays()
     {
@@ -222,9 +202,6 @@ public class SkyWars extends PluginBase implements Listener
 			event.setCancelled();
 		}
 	}
-	
-
-	
 
 
 	@EventHandler
@@ -243,61 +220,6 @@ public class SkyWars extends PluginBase implements Listener
 	
 	public int getReward() {
 		return (int) settingsc.get("reward-amount");
-	}
-	
-	@EventHandler
-	public void antiPvp(EntityDamageEvent event)
-	{
-		if(event.getEntity() instanceof Player) {
-			Player player = (Player) event.getEntity();
-			if(player.getLevel() == getServer().getDefaultLevel()){
-				{
-					event.setCancelled();
-				}
-			}
-		}
-		if(event instanceof EntityDamageByEntityEvent) {
-			Entity target = ((EntityDamageByEntityEvent)event).getEntity();
-			if(target instanceof KitNPC) {
-				KitNPC hit = (KitNPC) target;
-				Player hrac = (Player) ((EntityDamageByEntityEvent)event).getDamager();
-				SWPlayer p = getPlayer(hrac);
-				event.setCancelled();
-				p.isBuying = true;
-				p.buyingKit = hit.getKitId();
-				hrac.sendMessage(LanguageManager.translate("buy_kit",hrac,hit.getNameTag(), String.valueOf(getKitPrice(hit.getKitId()))));
-			}
-		}
-	}
-	
-	@EventHandler
-	public void buy(PlayerChatEvent event) {
-		Player player = event.getPlayer();
-		SWPlayer p = getPlayer(player);
-		String message = event.getMessage();
-		if(p.isBuying) {
-			event.setCancelled();
-			switch(message) {
-			case "yes":
-				if(p.getMoney() >= getKitPrice(p.buyingKit)) {
-					p.buyKit(p.buyingKit);
-					p.addMoney(- getKitPrice(p.buyingKit));
-					player.sendMessage("§eSkyWars> §aSuccesfully bought kit §b" + p.buyingKit);
-					p.isBuying = false;
-					p.buyingKit = "";
-				} else {
-					player.sendMessage("§eSkyWars> §cYou have no money");
-					p.isBuying = false;
-					p.buyingKit = "";
-				}
-				break;
-			case "no":
-				player.sendMessage("§eSkyWars> §aCancelled buying");
-				p.isBuying = false;
-				p.buyingKit = "";
-				break;
-			}
-		}
 	}
 	
 	public static SWPlayer getPlayer(Player player) {
@@ -325,9 +247,8 @@ public class SkyWars extends PluginBase implements Listener
 	@EventHandler
 	public void handleQuit(PlayerQuitEvent event) {
 		Player player = event.getPlayer();
-		antiDupe.remove(player);
-		players.remove(player.getName().toLowerCase());
-		if(settingsc.getBoolean("quitMessage-enabled") == true) {
+		players.remove(player.getName().toLowerCase()).save();
+		if(!settingsc.getBoolean("quitMessage-enabled")) {
 			event.setQuitMessage("");
 		}
 	}
@@ -472,7 +393,7 @@ public class SkyWars extends PluginBase implements Listener
     						player.sendMessage("§l§e---===[SkyWars help]===---");
     						player.sendMessage("§l§e- §a/sw create <arena_name> §7- Creates new arena");
     						player.sendMessage("§l§e- §a/sw finish §7- Finishes setup");
-    						player.sendMessage("§l§e- §a/sw npc <spawn|delete> <builder|soldier|{custom kit id}> §7- Creates/Deletes kit NPC");
+    						player.sendMessage("§l§e- §a/sw npc <spawn|delete> <solo|doubles|trios|squads> §7- Creates/Deletes game NPC");
     					}
     					else if(args[0].equals("create")) {
             				String arenaname = (String) args[1];

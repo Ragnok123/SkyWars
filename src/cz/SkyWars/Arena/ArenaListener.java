@@ -168,16 +168,6 @@ public class ArenaListener implements Listener {
 			Arena a = data.getArena();
 		if (a.arenaplayers.containsKey(player.getName()))
 		{
-			if(item.getCustomName().equals("§l§eBuilder Kit")) {
-				event.setCancelled();
-				data.setKit(SkyWars.getInstance().kitMgr.kits.get("builder"));
-				player.sendMessage("§l§eSkyWars> §aSelected kit §bBuilder");
-			}
-			if(item.getCustomName().equals("§l§eSoldier Kit")) {
-				event.setCancelled();
-				data.setKit(SkyWars.getInstance().kitMgr.kits.get("soldier"));
-				player.sendMessage("§l§eSkyWars> §aSelected kit §bSoldier");
-			}
 			if(item.getCustomName().equals("§eBack to lobby"))
 			{
 				event.setCancelled();

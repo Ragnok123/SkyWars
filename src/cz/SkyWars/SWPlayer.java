@@ -3,7 +3,6 @@ package cz.SkyWars;
 import cn.nukkit.block.Block;
 import cn.nukkit.plugin.Plugin;
 import cz.SkyWars.Arena.Arena;
-import cz.SkyWars.Kits.Kit;
 import cn.nukkit.Player;
 import cn.nukkit.Server;
 
@@ -11,12 +10,10 @@ public class SWPlayer {
 	
 	private Player player;
 	private boolean isLobby = true;
-	private int currentPosition;
-	private boolean isAdmin = false;
 	
-	private Kit kit;
-	public boolean isBuying = false;
-	public String buyingKit = "";
+	public int wins = 0;
+	public int kills = 0;
+	public int deaths = 0;
 	
 	private Arena arena;
 	
@@ -25,10 +22,16 @@ public class SWPlayer {
 		init();
 	}
 	
+	public Player getPlayer() {
+		return this.player;
+	}
+	
 	public void init() {
-		if(!SkyWars.getInstance().database.checkAccStats(this.player.getName().toLowerCase())) {
-			SkyWars.getInstance().database.createDataStats(this.player.getName().toLowerCase());
-		}
+		SkyWars.getInstance().database.loadData(this);
+	}
+	
+	public void save() {
+		SkyWars.getInstance().database.saveData(this);
 	}
 	
 	public Arena getArena() {
@@ -43,31 +46,6 @@ public class SWPlayer {
 		arena = a;
 	}
 	
-	public Kit getKit() {
-		return kit;
-	}
-	
-	public void setKit(Kit kit) {
-		unsetKit();
-		this.kit = kit;
-	}
-	
-	public void unsetKit() {
-		kit = null;
-	}
-	
-	public void giveKit() {
-		getKit().handle(this.player);
-	}
-	
-	public int getMoney() {
-		return SkyWars.getInstance().economy.getMoney(this.player);
-	}
-	
-	public void addMoney(int money) {
-		SkyWars.getInstance().economy.addMoney(this.player,money);
-	}
-	
 	public boolean isInLobby() {
 		return isLobby;
 	}
@@ -77,35 +55,27 @@ public class SWPlayer {
 	}
 	
 	public int getKills() {
-		return SkyWars.getInstance().database.getKills(this.player.getName().toLowerCase());
+		return kills;
 	}
 	
 	public int getWins() {
-		return SkyWars.getInstance().database.getWins(this.player.getName().toLowerCase());
+		return wins;
 	}
 	
 	public int getDeaths() {
-		return SkyWars.getInstance().database.getDeaths(this.player.getName().toLowerCase());
+		return deaths;
 	}
 	
 	public void addKill() {
-		SkyWars.getInstance().database.addKills(this.player.getName().toLowerCase(),1);
+		kills += 1;
 	}
 	
 	public void addWin() {
-		SkyWars.getInstance().database.addWins(this.player.getName().toLowerCase(),1);
+		wins += 1;
 	}
 	
 	public void addDeath() {
-		SkyWars.getInstance().database.addDeaths(this.player.getName().toLowerCase(),1);
-	}
-	
-	public boolean hasKit(String kit) {
-		return SkyWars.getInstance().database.hasKit(this.player.getName().toLowerCase(),kit);
-	}
-	
-	public void buyKit(String kit) {
-		SkyWars.getInstance().database.buyKit(this.player.getName().toLowerCase(),kit);
+		deaths += 1;
 	}
 	
 }

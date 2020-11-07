@@ -6,7 +6,6 @@ import cz.SkyWars.Arena.Timer.*;
 import cz.SkyWars.Manager.*;
 import cz.SkyWars.Manager.WorldManager.ArenaWorldManager;
 import cz.SkyWars.Actions.RandomAction;
-import cz.SkyWars.Actions.MoneyRewardAction;
 
 import cn.nukkit.block.*;
 import cn.nukkit.blockentity.*;
@@ -380,9 +379,6 @@ public class Arena implements Listener
 							ingame.sendTitle("§bGame started");
 							ingame.getInventory().clearAll();
 							ingame.setImmobile(false);
-							if(SkyWars.getPlayer(ingame).getKit() != null){
-								SkyWars.getPlayer(ingame).giveKit();
-							}
 						}
 					}
 					break;
@@ -422,7 +418,6 @@ public class Arena implements Listener
 						pla.getFoodData().setLevel(20);
 						leave(pla, "leave");
 						Server.getInstance().broadcastMessage("§eSkyWars> " + pla.getDisplayName() + " §awon the game on arena §b" + this.arenaname + "");
-						new MoneyRewardAction(pla);
 						reloadLevel();
 						resetPositions();
 					}
@@ -539,16 +534,6 @@ public class Arena implements Listener
 		ingame.getInventory().clearAll();
 		ingame.setHealth(20);
 		ingame.getFoodData().setLevel(20);
-		if(SkyWars.getPlayer(player).hasKit("builder")) {
-			Item build = Item.get(Item.COBBLESTONE,0,1);
-			build.setCustomName("§l§eBuilder Kit");
-			player.getInventory().setItem(0,build);
-		}
-		if(SkyWars.getPlayer(player).hasKit("soldier")) {
-			Item build = Item.get(Item.WOODEN_SWORD,0,1);
-			build.setCustomName("§l§eSoldier Kit");
-			player.getInventory().setItem(1,build);
-		}
 		Item clock = Item.get(Item.CLOCK);
 		clock.setCustomName("§eBack to lobby");
 		ingame.getInventory().setItem(4, clock);
@@ -557,7 +542,6 @@ public class Arena implements Listener
     public void leave(Player player, String cause) {
     	SWPlayer data = SkyWars.getPlayer(player);
     	data.setArena(null);
-    	data.unsetKit();
     	if(cause == "void") {
     		arenaplayers.remove(player.getName());
     		data.setInLobby(true);
